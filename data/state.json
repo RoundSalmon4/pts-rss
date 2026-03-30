@@ -1,3 +1,8 @@
 {
-  "published": {}
+  "published": {
+    "nba": [],
+    "mlb": [],
+    "nhl": [],
+    "nfl": []
+  }
 }
