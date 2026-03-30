@@ -78,7 +78,12 @@ def load_existing_items(path):
     channel = root.find("channel")
     if channel is None:
         return []
-    return channel.findall("item")
+    items = []
+    for item in channel.findall("item"):
+        guid = item.find("guid")
+        if guid is not None and guid.text and "placeholder" not in guid.text:
+            items.append(item)
+    return items
 
 def write_feed(path, title, link, description, new_items):
     rss = Element("rss", version="2.0")
@@ -135,13 +140,24 @@ def main():
                     [(gid, title)]
                 )
 
-        if league_new:
+        existing_items = load_existing_items(RSS_DIR / f"{league}.xml")
+        has_games = bool(league_new) or bool(existing_items)
+        
+        if has_games:
             write_feed(
                 RSS_DIR / f"{league}.xml",
                 f"Plain Text Sports – {league.upper()} Finals",
                 url,
                 f"{league.upper()} final scores",
                 league_new
+            )
+        else:
+            write_feed(
+                RSS_DIR / f"{league}.xml",
+                f"Plain Text Sports – {league.upper()} Finals",
+                url,
+                f"{league.upper()} final scores",
+                [(f"{league}-placeholder", "No games available currently")]
             )
 
     if all_new:
@@ -151,6 +167,14 @@ def main():
             "https://plaintextsports.com",
             "All leagues final scores",
             all_new
+        )
+    else:
+        write_feed(
+            RSS_DIR / "all-finals.xml",
+            "Plain Text Sports – All Finals",
+            "https://plaintextsports.com",
+            "All leagues final scores",
+            [("all-placeholder", "No games available currently")]
         )
 
     save_state(state)
