@@ -10,14 +10,35 @@ STATE_FILE = ROOT / "data" / "state.json"
 RSS_DIR = ROOT / "rss"
 TEAM_DIR = RSS_DIR / "teams"
 
-LEAGUES = {
-    "nba": "https://plaintextsports.com/nba/",
-    "mlb": "https://plaintextsports.com/mlb/",
-    "nhl": "https://plaintextsports.com/nhl/",
-    "nfl": "https://plaintextsports.com/nfl/",
-    "ncaamb": "https://plaintextsports.com/ncaa-mb/",
-    "ncaawb": "https://plaintextsports.com/ncaa-wb/",
+BASE_URL = "https://plaintextsports.com"
+KNOWN_LEAGUES = {
+    "nba": "nba",
+    "mlb": "mlb",
+    "nhl": "nhl",
+    "nfl": "nfl",
+    "wnba": "wnba",
+    "ncaa-mb": "ncaamb",
+    "ncaa-wb": "ncaawb",
+    "champions-league": "champions-league",
+    "europa-league": "europa-league",
+    "premier-league": "premier-league",
+    "world-cup": "world-cup",
+    "mls": "mls",
+    "nwsl": "nwsl",
 }
+
+def discover_leagues():
+    html = fetch(BASE_URL + "/")
+    leagues = {}
+    seen = set()
+    for sport in KNOWN_LEAGUES:
+        pattern = f'href="(/{sport}/[^"]*)"'
+        match = re.search(pattern, html)
+        if match:
+            seen.add(sport)
+            key = KNOWN_LEAGUES[sport]
+            leagues[key] = BASE_URL + "/" + sport + "/"
+    return leagues
 
 HEADERS = {"User-Agent": "plaintextsports-rss/3.0"}
 
@@ -83,8 +104,9 @@ def main():
     state.setdefault("published", {})
     all_new = []
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    leagues = discover_leagues()
 
-    for league, url in LEAGUES.items():
+    for league, url in leagues.items():
         state["published"].setdefault(league, [])
         today_url = f"{url}{today}/"
         html = fetch(today_url)
