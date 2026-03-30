@@ -3,6 +3,7 @@ import requests, json, re
 from pathlib import Path
 from datetime import datetime, timezone
 from xml.etree.ElementTree import Element, SubElement, ElementTree
+from bs4 import BeautifulSoup
 
 ROOT = Path(__file__).parent.parent
 STATE_FILE = ROOT / "data" / "state.json"
@@ -14,10 +15,11 @@ LEAGUES = {
     "mlb": "https://plaintextsports.com/mlb/",
     "nhl": "https://plaintextsports.com/nhl/",
     "nfl": "https://plaintextsports.com/nfl/",
+    "ncaamb": "https://plaintextsports.com/ncaa-mb/",
+    "ncaawb": "https://plaintextsports.com/ncaa-wb/",
 }
 
 HEADERS = {"User-Agent": "plaintextsports-rss/3.0"}
-SCORE_RE = re.compile(r"\|\s+([A-Z]{2,3})\s+(\d+)")
 
 RSS_DIR.mkdir(exist_ok=True)
 TEAM_DIR.mkdir(parents=True, exist_ok=True)
@@ -31,26 +33,31 @@ def save_state(state):
     STATE_FILE.write_text(json.dumps(state, indent=2))
 
 def fetch(url):
-    return requests.get(url, headers=HEADERS, timeout=20).text.splitlines()
+    return requests.get(url, headers=HEADERS, timeout=20).text
 
-def extract_games(lines):
+def extract_games(html):
+    soup = BeautifulSoup(html, "html.parser")
     games = []
-    for i, line in enumerate(lines):
-        if "Final" in line:
-            ot = "OT" in line
-            teams = []
-            for w in lines[i-4:i+4]:
-                m = SCORE_RE.search(w)
-                if m:
-                    teams.append(m.groups())
-            if len(teams) == 2:
-                games.append((teams[0], teams[1], ot))
+    for game in soup.find_all("a", href=True):
+        if "/20" not in game.get("href", ""):
+            continue
+        text = game.get_text()
+        if "Final" not in text:
+            continue
+        team_scores = re.findall(r"([A-Z]{2,3})\s+(\d+)", text)
+        if len(team_scores) == 2:
+            ot = "OT" in text
+            games.append(((team_scores[0][0], team_scores[0][1]), (team_scores[1][0], team_scores[1][1]), ot))
     return games
 
 def load_existing_items(path):
     if not path.exists():
         return []
-    return ElementTree(file=path).getroot().find("channel").findall("item")
+    root = ElementTree(file=path).getroot()
+    channel = root.find("channel")
+    if channel is None:
+        return []
+    return channel.findall("item")
 
 def write_feed(path, title, link, description, new_items):
     rss = Element("rss", version="2.0")
@@ -75,15 +82,17 @@ def main():
     state = load_state()
     state.setdefault("published", {})
     all_new = []
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     for league, url in LEAGUES.items():
         state["published"].setdefault(league, [])
-        lines = fetch(url)
-        games = extract_games(lines)
+        today_url = f"{url}{today}/"
+        html = fetch(today_url)
+        games = extract_games(html)
         league_new = []
 
         for away, home, ot in games:
-            gid = f"{league}-{away[0]}-{home[0]}-{datetime.utcnow().date()}"
+            gid = f"{league}-{away[0]}-{home[0]}-{today}"
             if gid in state["published"][league]:
                 continue
 
