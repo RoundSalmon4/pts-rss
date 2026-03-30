@@ -1,5 +1,8 @@
 name: Update Plain Text Sports RSS feeds
 
+permissions:
+  contents: write
+
 on:
   schedule:
     - cron: "*/10 * * * *"
