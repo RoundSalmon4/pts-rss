@@ -30,14 +30,12 @@ KNOWN_LEAGUES = {
 def discover_leagues():
     html = fetch(BASE_URL + "/")
     leagues = {}
-    seen = set()
     for sport in KNOWN_LEAGUES:
         pattern = f'href="(/{sport}/[^"]*)"'
-        match = re.search(pattern, html)
-        if match:
-            seen.add(sport)
-            key = KNOWN_LEAGUES[sport]
-            leagues[key] = BASE_URL + "/" + sport + "/"
+        if re.search(pattern, html):
+            leagues[KNOWN_LEAGUES[sport]] = BASE_URL + "/" + sport + "/"
+        else:
+            leagues[KNOWN_LEAGUES[sport]] = BASE_URL + "/" + sport + "/"
     return leagues
 
 HEADERS = {"User-Agent": "plaintextsports-rss/3.0"}
