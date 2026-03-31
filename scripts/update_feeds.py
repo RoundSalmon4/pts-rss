@@ -96,35 +96,56 @@ def load_existing_items(path):
             items.append(item)
     return items
 
-def write_feed(path, title, link, description, new_items, always_keep_existing=False, all_guids=None):
+def write_feed(path, title, link, description, new_items):
     rss = Element("rss", version="2.0")
     channel = SubElement(rss, "channel")
     SubElement(channel, "title").text = title
     SubElement(channel, "link").text = link
     SubElement(channel, "description").text = description
 
-    existing_guids = set()
     for item in load_existing_items(path):
-        guid = item.find("guid")
-        if guid is not None and guid.text:
-            existing_guids.add(guid.text)
         channel.append(item)
-    
-    if all_guids:
-        existing_guids.update(all_guids)
-    
-    if always_keep_existing or all_guids:
-        final_items = []
-        for gid, txt in new_items:
-            if gid not in existing_guids:
-                final_items.append((gid, txt))
-        new_items = final_items
 
     for gid, txt in new_items:
         it = SubElement(channel, "item")
         SubElement(it, "title").text = txt
         SubElement(it, "link").text = link
         SubElement(it, "guid").text = gid
+        SubElement(it, "pubDate").text = datetime.now(TIMEZONE).strftime("%a, %d %b %Y %H:%M:%S %z")
+
+    ElementTree(rss).write(path, encoding="utf-8", xml_declaration=True)
+
+def write_feed_from_state(path, title, link, description, league, state):
+    rss = Element("rss", version="2.0")
+    channel = SubElement(rss, "channel")
+    SubElement(channel, "title").text = title
+    SubElement(channel, "link").text = link
+    SubElement(channel, "description").text = description
+
+    if league == "all":
+        published = []
+        for league_guids in state.get("published", {}).values():
+            published.extend(league_guids)
+    else:
+        published = state.get("published", {}).get(league, [])
+    
+    for gid in published:
+        match = re.match(r"([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid.replace(f"{league}-", ""))
+        if match:
+            team1, team2, date = match.groups()
+            title_text = f"{team1} {team2} (Final)"
+            it = SubElement(channel, "item")
+            SubElement(it, "title").text = title_text
+            SubElement(it, "link").text = link
+            SubElement(it, "guid").text = gid
+            SubElement(it, "pubDate").text = datetime.now(TIMEZONE).strftime("%a, %d %b %Y %H:%M:%S %z")
+
+    placeholder_guid = f"{league}-placeholder"
+    if not published:
+        it = SubElement(channel, "item")
+        SubElement(it, "title").text = "No games available currently"
+        SubElement(it, "link").text = link
+        SubElement(it, "guid").text = placeholder_guid
         SubElement(it, "pubDate").text = datetime.now(TIMEZONE).strftime("%a, %d %b %Y %H:%M:%S %z")
 
     ElementTree(rss).write(path, encoding="utf-8", xml_declaration=True)
@@ -172,59 +193,23 @@ def main():
                     team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
                     write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)])
 
-        if league_new:
-            placeholder_item = [(f"{league}-placeholder", "No games available currently")]
-            placeholder_guids = [gid for gid, txt in placeholder_item]
-            combined_guids = state["published"][league] + placeholder_guids
-            write_feed(
-                RSS_DIR / f"{league}.xml",
-                f"Plain Text Sports – {league.upper()} Finals",
-                url,
-                f"{league.upper()} final scores",
-                league_new,
-                always_keep_existing=True,
-                all_guids=combined_guids
-            )
-        else:
-            placeholder_item = [(f"{league}-placeholder", "No games available currently")]
-            placeholder_guids = [gid for gid, txt in placeholder_item]
-            write_feed(
-                RSS_DIR / f"{league}.xml",
-                f"Plain Text Sports – {league.upper()} Finals",
-                url,
-                f"{league.upper()} final scores",
-                placeholder_item,
-                always_keep_existing=True,
-                all_guids=state["published"][league] + placeholder_guids
-            )
-
-    all_published_guids = []
-    for league_guids in state["published"].values():
-        all_published_guids.extend(league_guids)
-
-    placeholder_item = [("all-placeholder", "No games available currently")]
-    placeholder_guids = [gid for gid, txt in placeholder_item]
-
-    if all_new:
-        write_feed(
-            RSS_DIR / "all-finals.xml",
-            "Plain Text Sports – All Finals",
-            "https://plaintextsports.com",
-            "All leagues final scores",
-            all_new,
-            always_keep_existing=True,
-            all_guids=all_published_guids + placeholder_guids
+        write_feed_from_state(
+            RSS_DIR / f"{league}.xml",
+            f"Plain Text Sports – {league.upper()} Finals",
+            url,
+            f"{league.upper()} final scores",
+            league,
+            state
         )
-    else:
-        write_feed(
-            RSS_DIR / "all-finals.xml",
-            "Plain Text Sports – All Finals",
-            "https://plaintextsports.com",
-            "All leagues final scores",
-            placeholder_item,
-            always_keep_existing=True,
-            all_guids=all_published_guids + placeholder_guids
-        )
+
+    write_feed_from_state(
+        RSS_DIR / "all-finals.xml",
+        "Plain Text Sports – All Finals",
+        "https://plaintextsports.com",
+        "All leagues final scores",
+        "all",
+        state
+    )
 
     save_state(state)
 
