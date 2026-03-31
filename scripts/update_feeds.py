@@ -173,6 +173,9 @@ def main():
                     write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)])
 
         if league_new:
+            placeholder_item = [(f"{league}-placeholder", "No games available currently")]
+            placeholder_guids = [gid for gid, txt in placeholder_item]
+            combined_guids = state["published"][league] + placeholder_guids
             write_feed(
                 RSS_DIR / f"{league}.xml",
                 f"Plain Text Sports – {league.upper()} Finals",
@@ -180,10 +183,9 @@ def main():
                 f"{league.upper()} final scores",
                 league_new,
                 always_keep_existing=True,
-                all_guids=state["published"][league]
+                all_guids=combined_guids
             )
         else:
-            existing_items = load_existing_items(RSS_DIR / f"{league}.xml")
             placeholder_item = [(f"{league}-placeholder", "No games available currently")]
             placeholder_guids = [gid for gid, txt in placeholder_item]
             write_feed(
@@ -202,7 +204,6 @@ def main():
 
     placeholder_item = [("all-placeholder", "No games available currently")]
     placeholder_guids = [gid for gid, txt in placeholder_item]
-    all_with_placeholder = all_published_guids + placeholder_guids
 
     if all_new:
         write_feed(
@@ -212,7 +213,7 @@ def main():
             "All leagues final scores",
             all_new,
             always_keep_existing=True,
-            all_guids=all_published_guids
+            all_guids=all_published_guids + placeholder_guids
         )
     else:
         write_feed(
@@ -222,7 +223,7 @@ def main():
             "All leagues final scores",
             placeholder_item,
             always_keep_existing=True,
-            all_guids=all_with_placeholder
+            all_guids=all_published_guids + placeholder_guids
         )
 
     save_state(state)
