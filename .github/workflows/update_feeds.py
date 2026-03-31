@@ -132,61 +132,44 @@ def main():
         state["published"].setdefault(league, [])
         league_new = []
 
-        main_page_url = url
-        print(f"Checking {league} main page: {main_page_url}")
-        html = fetch(main_page_url)
+        # First check the main league page (shows today's completed games)
+        print(f"Checking {league} main page: {url}")
+        html = fetch(url)
         games = extract_games(html)
-        print(f"  Games found: {games}")
+        print(f"  Games from main page: {games}")
 
         for away, home, ot in games:
             gid = f"{league}-{away[0]}-{home[0]}-{today}"
             if gid in state["published"][league]:
                 continue
-
             suffix = " (OT)" if ot else ""
             title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
             state["published"][league].append(gid)
-
             league_new.append((gid, title))
             all_new.append((gid, f"{league.upper()}: {title}"))
-
             for team in (away[0], home[0]):
                 team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
-                write_feed(
-                    team_path,
-                    f"{league.upper()} – {team} Finals",
-                    url,
-                    f"Final games for {team}",
-                    [(gid, title)]
-                )
+                write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)])
 
+        # Then check yesterday's page
         yesterday_url = f"{url}{yesterday}/"
         print(f"Checking {league} yesterday: {yesterday_url}")
         html = fetch(yesterday_url)
         games = extract_games(html)
-        print(f"  Games found: {games}")
+        print(f"  Games from yesterday: {games}")
 
         for away, home, ot in games:
             gid = f"{league}-{away[0]}-{home[0]}-{yesterday}"
             if gid in state["published"][league]:
                 continue
-
             suffix = " (OT)" if ot else ""
             title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
             state["published"][league].append(gid)
-
             league_new.append((gid, title))
             all_new.append((gid, f"{league.upper()}: {title}"))
-
             for team in (away[0], home[0]):
                 team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
-                write_feed(
-                    team_path,
-                    f"{league.upper()} – {team} Finals",
-                    url,
-                    f"Final games for {team}",
-                    [(gid, title)]
-                )
+                write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)])
 
         existing_items = load_existing_items(RSS_DIR / f"{league}.xml")
         has_games = bool(league_new) or bool(existing_items)
