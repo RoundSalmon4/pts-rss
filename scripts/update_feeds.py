@@ -1,7 +1,7 @@
 
 import requests, json, re
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from xml.etree.ElementTree import Element, SubElement, ElementTree
 from bs4 import BeautifulSoup
 
@@ -11,6 +11,7 @@ RSS_DIR = ROOT / "rss"
 TEAM_DIR = RSS_DIR / "teams"
 
 BASE_URL = "https://plaintextsports.com"
+TIMEZONE = timezone(timedelta(hours=-5))
 KNOWN_LEAGUES = {
     "nba": "nba",
     "mlb": "mlb",
@@ -98,7 +99,7 @@ def write_feed(path, title, link, description, new_items):
         SubElement(it, "title").text = txt
         SubElement(it, "link").text = link
         SubElement(it, "guid").text = gid
-        SubElement(it, "pubDate").text = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
+        SubElement(it, "pubDate").text = datetime.now(TIMEZONE).strftime("%a, %d %b %Y %H:%M:%S %z")
 
     ElementTree(rss).write(path, encoding="utf-8", xml_declaration=True)
 
@@ -106,37 +107,44 @@ def main():
     state = load_state()
     state.setdefault("published", {})
     all_new = []
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    now = datetime.now(TIMEZONE)
+    today = now.strftime("%Y-%m-%d")
+    yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    days_to_check = [today, yesterday]
+
     leagues = discover_leagues()
 
     for league, url in leagues.items():
         state["published"].setdefault(league, [])
-        today_url = f"{url}{today}/"
-        html = fetch(today_url)
-        games = extract_games(html)
         league_new = []
 
-        for away, home, ot in games:
-            gid = f"{league}-{away[0]}-{home[0]}-{today}"
-            if gid in state["published"][league]:
-                continue
+        for day in days_to_check:
+            day_url = f"{url}{day}/"
+            html = fetch(day_url)
+            games = extract_games(html)
 
-            suffix = " (OT)" if ot else ""
-            title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
-            state["published"][league].append(gid)
+            for away, home, ot in games:
+                gid = f"{league}-{away[0]}-{home[0]}-{day}"
+                if gid in state["published"][league]:
+                    continue
 
-            league_new.append((gid, title))
-            all_new.append((gid, f"{league.upper()}: {title}"))
+                suffix = " (OT)" if ot else ""
+                title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
+                state["published"][league].append(gid)
 
-            for team in (away[0], home[0]):
-                team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
-                write_feed(
-                    team_path,
-                    f"{league.upper()} – {team} Finals",
-                    url,
-                    f"Final games for {team}",
-                    [(gid, title)]
-                )
+                league_new.append((gid, title))
+                all_new.append((gid, f"{league.upper()}: {title}"))
+
+                for team in (away[0], home[0]):
+                    team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
+                    write_feed(
+                        team_path,
+                        f"{league.upper()} – {team} Finals",
+                        url,
+                        f"Final games for {team}",
+                        [(gid, title)]
+                    )
 
         existing_items = load_existing_items(RSS_DIR / f"{league}.xml")
         has_games = bool(league_new) or bool(existing_items)
