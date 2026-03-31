@@ -62,23 +62,23 @@ def extract_games(html):
     soup = BeautifulSoup(html, "html.parser")
     games = []
     links = soup.find_all("a", href=True)
-    print(f"Found {len(links)} links")
+    print(f"Found {len(links)} total links")
     for game in links:
         href = game.get("href", "")
         text = game.get_text()
         if "/20" not in href:
             continue
-        print(f"  Link with /20: {href}")
-        print(f"    Text: {repr(text[:200])}")
+        print(f"  GAME LINK: href={href}")
+        print(f"    text={repr(text[:200])}")
         if "Final" not in text:
-            print(f"    No 'Final' in text")
+            print(f"    NO 'Final' - skipping")
             continue
         team_scores = re.findall(r"([A-Z]{2,3})\s+(\d+)", text)
-        print(f"    Team scores: {team_scores}")
+        print(f"    team_scores={team_scores}")
         if len(team_scores) == 2:
             ot = "OT" in text
             games.append(((team_scores[0][0], team_scores[0][1]), (team_scores[1][0], team_scores[1][1]), ot))
-            print(f"    Added game!")
+            print(f"    ADDED!")
     print(f"Extracted {len(games)} games")
     return games
 
