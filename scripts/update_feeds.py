@@ -53,21 +53,30 @@ def save_state(state):
     STATE_FILE.write_text(json.dumps(state, indent=2))
 
 def fetch(url):
-    return requests.get(url, headers=HEADERS, timeout=20).text
+    print(f"Fetching: {url}")
+    response = requests.get(url, headers=HEADERS, timeout=20)
+    print(f"Status: {response.status_code}, Length: {len(response.text)}")
+    return response.text
 
 def extract_games(html):
     soup = BeautifulSoup(html, "html.parser")
     games = []
-    for game in soup.find_all("a", href=True):
-        if "/20" not in game.get("href", ""):
+    links = soup.find_all("a", href=True)
+    print(f"Found {len(links)} links")
+    for game in links:
+        href = game.get("href", "")
+        if "/20" not in href:
             continue
         text = game.get_text()
+        print(f"  Link text: {repr(text[:100])}")
         if "Final" not in text:
             continue
         team_scores = re.findall(r"([A-Z]{2,3})\s+(\d+)", text)
+        print(f"    Team scores: {team_scores}")
         if len(team_scores) == 2:
             ot = "OT" in text
             games.append(((team_scores[0][0], team_scores[0][1]), (team_scores[1][0], team_scores[1][1]), ot))
+    print(f"Extracted {len(games)} games")
     return games
 
 def load_existing_items(path):
@@ -112,8 +121,10 @@ def main():
     today = now.strftime("%Y-%m-%d")
     yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
     days_to_check = [today, yesterday]
+    print(f"Today: {today}, Yesterday: {yesterday}, Days: {days_to_check}")
 
     leagues = discover_leagues()
+    print(f"Leagues: {leagues}")
 
     for league, url in leagues.items():
         state["published"].setdefault(league, [])
@@ -121,8 +132,10 @@ def main():
 
         for day in days_to_check:
             day_url = f"{url}{day}/"
+            print(f"Checking {league} {day}: {day_url}")
             html = fetch(day_url)
             games = extract_games(html)
+            print(f"  Games found: {games}")
 
             for away, home, ot in games:
                 gid = f"{league}-{away[0]}-{home[0]}-{day}"
