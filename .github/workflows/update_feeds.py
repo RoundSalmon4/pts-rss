@@ -61,23 +61,16 @@ def fetch(url):
 def extract_games(html):
     soup = BeautifulSoup(html, "html.parser")
     games = []
-    date_match = re.search(r"(\w+),?\s+(\w+)\s+(\d+)", html)
-    page_date = None
-    if date_match:
-        month_map = {"January": "01", "February": "02", "March": "03", "April": "04", "May": "05", "June": "06", "July": "07", "August": "08", "September": "09", "October": "10", "November": "11", "December": "12"}
-        month = month_map.get(date_match.group(2), "01")
-        day = date_match.group(3).zfill(2)
-        page_date = f"2026-{month}-{day}"
-    
     links = soup.find_all("a", href=True)
-    print(f"Found {len(links)} links, page_date: {page_date}")
+    print(f"Found {len(links)} links")
     for game in links:
         href = game.get("href", "")
         if "/20" not in href:
             continue
+        date_match = re.search(r"/(\d{4}-\d{2}-\d{2})/", href)
+        page_date = date_match.group(1) if date_match else None
         text = game.get_text()
-        print(f"  GAME LINK: {href}")
-        print(f"    text: {repr(text[:200])}")
+        print(f"  GAME LINK: {href}, date: {page_date}")
         if "Final" not in text:
             continue
         team_scores = re.findall(r"([A-Z]{2,3})\s+(\d+)", text)
