@@ -65,17 +65,20 @@ def extract_games(html):
     print(f"Found {len(links)} links")
     for game in links:
         href = game.get("href", "")
+        text = game.get_text()
         if "/20" not in href:
             continue
-        text = game.get_text()
-        print(f"  Link text: {repr(text[:100])}")
+        print(f"  Link with /20: {href}")
+        print(f"    Text: {repr(text[:200])}")
         if "Final" not in text:
+            print(f"    No 'Final' in text")
             continue
         team_scores = re.findall(r"([A-Z]{2,3})\s+(\d+)", text)
         print(f"    Team scores: {team_scores}")
         if len(team_scores) == 2:
             ot = "OT" in text
             games.append(((team_scores[0][0], team_scores[0][1]), (team_scores[1][0], team_scores[1][1]), ot))
+            print(f"    Added game!")
     print(f"Extracted {len(games)} games")
     return games
 
