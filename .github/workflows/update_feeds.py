@@ -61,24 +61,30 @@ def fetch(url):
 def extract_games(html):
     soup = BeautifulSoup(html, "html.parser")
     games = []
+    date_match = re.search(r"(\w+),?\s+(\w+)\s+(\d+)", html)
+    page_date = None
+    if date_match:
+        month_map = {"January": "01", "February": "02", "March": "03", "April": "04", "May": "05", "June": "06", "July": "07", "August": "08", "September": "09", "October": "10", "November": "11", "December": "12"}
+        month = month_map.get(date_match.group(2), "01")
+        day = date_match.group(3).zfill(2)
+        page_date = f"2026-{month}-{day}"
+    
     links = soup.find_all("a", href=True)
-    print(f"Found {len(links)} total links")
+    print(f"Found {len(links)} links, page_date: {page_date}")
     for game in links:
         href = game.get("href", "")
         if "/20" not in href:
-            print(f"  SKIP link (no /20): {href}")
             continue
-        print(f"  GAME LINK: {href}")
         text = game.get_text()
+        print(f"  GAME LINK: {href}")
         print(f"    text: {repr(text[:200])}")
         if "Final" not in text:
-            print(f"    NO 'Final' - skipping")
             continue
         team_scores = re.findall(r"([A-Z]{2,3})\s+(\d+)", text)
         if len(team_scores) == 2:
             ot = "OT" in text
-            games.append(((team_scores[0][0], team_scores[0][1]), (team_scores[1][0], team_scores[1][1]), ot))
-            print(f"    ADDED: {team_scores}")
+            games.append(((team_scores[0][0], team_scores[0][1]), (team_scores[1][0], team_scores[1][1]), ot, page_date))
+            print(f"    ADDED!")
     print(f"Extracted {len(games)} games")
     return games
 
@@ -138,8 +144,8 @@ def main():
         games = extract_games(html)
         print(f"  Games from main page: {games}")
 
-        for away, home, ot in games:
-            gid = f"{league}-{away[0]}-{home[0]}-{today}"
+        for away, home, ot, page_date in games:
+            gid = f"{league}-{away[0]}-{home[0]}-{page_date or today}"
             if gid in state["published"][league]:
                 continue
             suffix = " (OT)" if ot else ""
@@ -158,8 +164,8 @@ def main():
         games = extract_games(html)
         print(f"  Games from yesterday: {games}")
 
-        for away, home, ot in games:
-            gid = f"{league}-{away[0]}-{home[0]}-{yesterday}"
+        for away, home, ot, page_date in games:
+            gid = f"{league}-{away[0]}-{home[0]}-{page_date or yesterday}"
             if gid in state["published"][league]:
                 continue
             suffix = " (OT)" if ot else ""
