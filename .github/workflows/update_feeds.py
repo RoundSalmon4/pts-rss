@@ -1,4 +1,6 @@
 
+# Plain Text Sports RSS Feed Updater
+# v3.1 - extracts date from game URLs
 import requests, json, re
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
