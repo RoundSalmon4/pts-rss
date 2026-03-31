@@ -27,5 +27,9 @@ jobs:
           git config user.name "rss-bot"
           git config user.email "rss-bot@users.noreply.github.com"
           git add rss data/state.json
-          git commit -m "Update RSS feeds" || exit 0
-          git push
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update RSS feeds"
+            git push
+          fi
