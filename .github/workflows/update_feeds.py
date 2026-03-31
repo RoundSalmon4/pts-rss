@@ -65,20 +65,20 @@ def extract_games(html):
     print(f"Found {len(links)} total links")
     for game in links:
         href = game.get("href", "")
-        text = game.get_text()
         if "/20" not in href:
+            print(f"  SKIP link (no /20): {href}")
             continue
-        print(f"  GAME LINK: href={href}")
-        print(f"    text={repr(text[:200])}")
+        print(f"  GAME LINK: {href}")
+        text = game.get_text()
+        print(f"    text: {repr(text[:200])}")
         if "Final" not in text:
             print(f"    NO 'Final' - skipping")
             continue
         team_scores = re.findall(r"([A-Z]{2,3})\s+(\d+)", text)
-        print(f"    team_scores={team_scores}")
         if len(team_scores) == 2:
             ot = "OT" in text
             games.append(((team_scores[0][0], team_scores[0][1]), (team_scores[1][0], team_scores[1][1]), ot))
-            print(f"    ADDED!")
+            print(f"    ADDED: {team_scores}")
     print(f"Extracted {len(games)} games")
     return games
 
@@ -132,7 +132,7 @@ def main():
         state["published"].setdefault(league, [])
         league_new = []
 
-        # First check the main league page (shows today's completed games)
+        # First check the main league page (shows today's final games)
         print(f"Checking {league} main page: {url}")
         html = fetch(url)
         games = extract_games(html)
@@ -151,7 +151,7 @@ def main():
                 team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
                 write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)])
 
-        # Then check yesterday's page
+        # Also check yesterday's date page for late-finishing games
         yesterday_url = f"{url}{yesterday}/"
         print(f"Checking {league} yesterday: {yesterday_url}")
         html = fetch(yesterday_url)
@@ -170,18 +170,6 @@ def main():
             for team in (away[0], home[0]):
                 team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
                 write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)])
-
-        existing_items = load_existing_items(RSS_DIR / f"{league}.xml")
-        has_games = bool(league_new) or bool(existing_items)
-        
-        if has_games:
-            write_feed(
-                RSS_DIR / f"{league}.xml",
-                f"Plain Text Sports – {league.upper()} Finals",
-                url,
-                f"{league.upper()} final scores",
-                league_new
-            )
         else:
             write_feed(
                 RSS_DIR / f"{league}.xml",
