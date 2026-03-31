@@ -1,38 +1,8 @@
 {
   "published": {
-    "nba": [
-      "nba-LAC-MIL-2026-03-29",
-      "nba-MIA-IND-2026-03-29",
-      "nba-SAC-BKN-2026-03-29",
-      "nba-BOS-CHA-2026-03-29",
-      "nba-ORL-TOR-2026-03-29",
-      "nba-WAS-POR-2026-03-29",
-      "nba-HOU-NOP-2026-03-29",
-      "nba-NYK-OKC-2026-03-29",
-      "nba-GSW-DEN-2026-03-29"
-    ],
-    "mlb": [
-      "mlb-MIN-BAL-2026-03-29",
-      "mlb-TEX-PHI-2026-03-29",
-      "mlb-KC-ATL-2026-03-29",
-      "mlb-ATH-TOR-2026-03-29",
-      "mlb-BOS-CIN-2026-03-29",
-      "mlb-PIT-NYM-2026-03-29",
-      "mlb-COL-MIA-2026-03-29",
-      "mlb-LAA-HOU-2026-03-29",
-      "mlb-CWS-MIL-2026-03-29",
-      "mlb-TB-STL-2026-03-29",
-      "mlb-WSH-CHC-2026-03-29",
-      "mlb-CLE-SEA-2026-03-29"
-    ],
-    "nhl": [
-      "nhl-FLA-NYR-2026-03-29",
-      "nhl-NSH-TBL-2026-03-29",
-      "nhl-MTL-CAR-2026-03-29",
-      "nhl-BOS-CBJ-2026-03-29",
-      "nhl-CHI-NJD-2026-03-29",
-      "nhl-DAL-PHI-2026-03-29"
-    ],
+    "nba": [],
+    "mlb": [],
+    "nhl": [],
     "nfl": [],
     "ncaamb": [],
     "ncaawb": [],
