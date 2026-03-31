@@ -62,20 +62,23 @@ def extract_games(html):
     soup = BeautifulSoup(html, "html.parser")
     games = []
     links = soup.find_all("a", href=True)
-    print(f"Found {len(links)} links")
+    print(f"Found {len(links)} total links")
     for game in links:
         href = game.get("href", "")
         if "/20" not in href:
+            print(f"  SKIP link (no /20): {href}")
             continue
+        print(f"  GAME LINK: {href}")
         text = game.get_text()
-        print(f"  Link text: {repr(text[:100])}")
+        print(f"    text: {repr(text[:200])}")
         if "Final" not in text:
+            print(f"    NO 'Final' - skipping")
             continue
         team_scores = re.findall(r"([A-Z]{2,3})\s+(\d+)", text)
-        print(f"    Team scores: {team_scores}")
         if len(team_scores) == 2:
             ot = "OT" in text
             games.append(((team_scores[0][0], team_scores[0][1]), (team_scores[1][0], team_scores[1][1]), ot))
+            print(f"    ADDED: {team_scores}")
     print(f"Extracted {len(games)} games")
     return games
 
@@ -120,8 +123,7 @@ def main():
     now = datetime.now(TIMEZONE)
     today = now.strftime("%Y-%m-%d")
     yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-    days_to_check = [today, yesterday]
-    print(f"Today: {today}, Yesterday: {yesterday}, Days: {days_to_check}")
+    print(f"Today: {today}, Yesterday: {yesterday}")
 
     leagues = discover_leagues()
     print(f"Leagues: {leagues}")
@@ -130,46 +132,44 @@ def main():
         state["published"].setdefault(league, [])
         league_new = []
 
-        for day in days_to_check:
-            day_url = f"{url}{day}/"
-            print(f"Checking {league} {day}: {day_url}")
-            html = fetch(day_url)
-            games = extract_games(html)
-            print(f"  Games found: {games}")
+        # First check the main league page (shows today's final games)
+        print(f"Checking {league} main page: {url}")
+        html = fetch(url)
+        games = extract_games(html)
+        print(f"  Games from main page: {games}")
 
-            for away, home, ot in games:
-                gid = f"{league}-{away[0]}-{home[0]}-{day}"
-                if gid in state["published"][league]:
-                    continue
+        for away, home, ot in games:
+            gid = f"{league}-{away[0]}-{home[0]}-{today}"
+            if gid in state["published"][league]:
+                continue
+            suffix = " (OT)" if ot else ""
+            title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
+            state["published"][league].append(gid)
+            league_new.append((gid, title))
+            all_new.append((gid, f"{league.upper()}: {title}"))
+            for team in (away[0], home[0]):
+                team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
+                write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)])
 
-                suffix = " (OT)" if ot else ""
-                title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
-                state["published"][league].append(gid)
+        # Also check yesterday's date page for late-finishing games
+        yesterday_url = f"{url}{yesterday}/"
+        print(f"Checking {league} yesterday: {yesterday_url}")
+        html = fetch(yesterday_url)
+        games = extract_games(html)
+        print(f"  Games from yesterday: {games}")
 
-                league_new.append((gid, title))
-                all_new.append((gid, f"{league.upper()}: {title}"))
-
-                for team in (away[0], home[0]):
-                    team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
-                    write_feed(
-                        team_path,
-                        f"{league.upper()} – {team} Finals",
-                        url,
-                        f"Final games for {team}",
-                        [(gid, title)]
-                    )
-
-        existing_items = load_existing_items(RSS_DIR / f"{league}.xml")
-        has_games = bool(league_new) or bool(existing_items)
-        
-        if has_games:
-            write_feed(
-                RSS_DIR / f"{league}.xml",
-                f"Plain Text Sports – {league.upper()} Finals",
-                url,
-                f"{league.upper()} final scores",
-                league_new
-            )
+        for away, home, ot in games:
+            gid = f"{league}-{away[0]}-{home[0]}-{yesterday}"
+            if gid in state["published"][league]:
+                continue
+            suffix = " (OT)" if ot else ""
+            title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
+            state["published"][league].append(gid)
+            league_new.append((gid, title))
+            all_new.append((gid, f"{league.upper()}: {title}"))
+            for team in (away[0], home[0]):
+                team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
+                write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)])
         else:
             write_feed(
                 RSS_DIR / f"{league}.xml",
