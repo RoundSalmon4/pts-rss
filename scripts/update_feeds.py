@@ -96,15 +96,26 @@ def load_existing_items(path):
             items.append(item)
     return items
 
-def write_feed(path, title, link, description, new_items):
+def write_feed(path, title, link, description, new_items, always_keep_existing=False):
     rss = Element("rss", version="2.0")
     channel = SubElement(rss, "channel")
     SubElement(channel, "title").text = title
     SubElement(channel, "link").text = link
     SubElement(channel, "description").text = description
 
-    for item in load_existing_items(path):
-        channel.append(item)
+    if always_keep_existing:
+        existing_guids = set()
+        for item in load_existing_items(path):
+            guid = item.find("guid")
+            if guid is not None and guid.text:
+                existing_guids.add(guid.text)
+            channel.append(item)
+        
+        final_items = []
+        for gid, txt in new_items:
+            if gid not in existing_guids:
+                final_items.append((gid, txt))
+        new_items = final_items
 
     for gid, txt in new_items:
         it = SubElement(channel, "item")
@@ -164,7 +175,8 @@ def main():
                 f"Plain Text Sports – {league.upper()} Finals",
                 url,
                 f"{league.upper()} final scores",
-                league_new
+                league_new,
+                always_keep_existing=True
             )
         else:
             write_feed(
@@ -172,7 +184,8 @@ def main():
                 f"Plain Text Sports – {league.upper()} Finals",
                 url,
                 f"{league.upper()} final scores",
-                [(f"{league}-placeholder", "No games available currently")]
+                [(f"{league}-placeholder", "No games available currently")],
+                always_keep_existing=True
             )
 
     if all_new:
@@ -181,7 +194,8 @@ def main():
             "Plain Text Sports – All Finals",
             "https://plaintextsports.com",
             "All leagues final scores",
-            all_new
+            all_new,
+            always_keep_existing=True
         )
     else:
         write_feed(
@@ -189,7 +203,8 @@ def main():
             "Plain Text Sports – All Finals",
             "https://plaintextsports.com",
             "All leagues final scores",
-            [("all-placeholder", "No games available currently")]
+            [("all-placeholder", "No games available currently")],
+            always_keep_existing=True
         )
 
     save_state(state)
