@@ -1,6 +1,6 @@
 
 # Plain Text Sports RSS Feed Updater
-# v3.1 - extracts date from game URLs
+# v3.2 - FIXED date extraction from game URLs
 import requests, json, re
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
@@ -72,7 +72,7 @@ def extract_games(html):
         date_match = re.search(r"/(\d{4}-\d{2}-\d{2})/", href)
         page_date = date_match.group(1) if date_match else None
         text = game.get_text()
-        print(f"  GAME LINK: {href}, date: {page_date}")
+        print(f"  GAME LINK: {href}, extracted_date: {page_date}")
         if "Final" not in text:
             continue
         team_scores = re.findall(r"([A-Z]{2,3})\s+(\d+)", text)
