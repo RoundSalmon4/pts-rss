@@ -124,7 +124,7 @@ def write_feed(path, title, link, description, new_items):
 
 SCORE_CACHE = {}
 
-def write_feed_from_state(path, title, link, description, league, state, leagues=None):
+def write_feed_from_state(path, title, link, description, league, state, leagues=None, new_items_only=False):
     rss = Element("rss", version="2.0")
     channel = SubElement(rss, "channel")
     SubElement(channel, "title").text = title
@@ -143,6 +143,9 @@ def write_feed_from_state(path, title, link, description, league, state, leagues
         league_url = leagues.get(league, "")
     
     for gid, title_text in published.items():
+        if new_items_only:
+            continue
+        
         if (not title_text or title_text == gid) and league != "all":
             match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
             if match:
@@ -214,25 +217,49 @@ def main():
                     team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
                     write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)])
 
-        write_feed_from_state(
-            RSS_DIR / f"{league}.xml",
-            f"Plain Text Sports – {league.upper()} Finals",
-            url,
-            f"{league.upper()} final scores",
-            league,
-            state,
-            leagues
-        )
+        if all_new:
+            write_feed(
+                RSS_DIR / f"{league}.xml",
+                f"Plain Text Sports – {league.upper()} Finals",
+                url,
+                f"{league.upper()} final scores",
+                all_new
+            )
+        else:
+            write_feed_from_state(
+                RSS_DIR / f"{league}.xml",
+                f"Plain Text Sports – {league.upper()} Finals",
+                url,
+                f"{league.upper()} final scores",
+                league,
+                state,
+                leagues,
+                new_items_only=True
+            )
 
-    write_feed_from_state(
-        RSS_DIR / "all-finals.xml",
-        "Plain Text Sports – All Finals",
-        "https://plaintextsports.com",
-        "All leagues final scores",
-        "all",
-        state,
-        leagues
-    )
+    all_league_new = []
+    for league, url in leagues.items():
+        all_league_new.extend(state["published"].get(league, {}).values())
+
+    if all_league_new:
+        write_feed(
+            RSS_DIR / "all-finals.xml",
+            "Plain Text Sports – All Finals",
+            "https://plaintextsports.com",
+            "All leagues final scores",
+            all_new
+        )
+    else:
+        write_feed_from_state(
+            RSS_DIR / "all-finals.xml",
+            "Plain Text Sports – All Finals",
+            "https://plaintextsports.com",
+            "All leagues final scores",
+            "all",
+            state,
+            leagues,
+            new_items_only=True
+        )
 
     save_state(state)
 
