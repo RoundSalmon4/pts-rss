@@ -124,7 +124,7 @@ def write_feed(path, title, link, description, new_items):
 
 SCORE_CACHE = {}
 
-def write_feed_from_state(path, title, link, description, league, state):
+def write_feed_from_state(path, title, link, description, league, state, leagues=None):
     rss = Element("rss", version="2.0")
     channel = SubElement(rss, "channel")
     SubElement(channel, "title").text = title
@@ -138,11 +138,12 @@ def write_feed_from_state(path, title, link, description, league, state):
     else:
         published = state.get("published", {}).get(league, {})
 
-    leagues = discover_leagues()
-    league_url = leagues.get(league, "")
+    league_url = ""
+    if league != "all" and leagues:
+        league_url = leagues.get(league, "")
     
     for gid, title_text in published.items():
-        if not title_text or title_text == gid:
+        if (not title_text or title_text == gid) and league != "all":
             match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
             if match:
                 league_key, team1, team2, date = match.groups()
@@ -219,7 +220,8 @@ def main():
             url,
             f"{league.upper()} final scores",
             league,
-            state
+            state,
+            leagues
         )
 
     write_feed_from_state(
@@ -228,7 +230,8 @@ def main():
         "https://plaintextsports.com",
         "All leagues final scores",
         "all",
-        state
+        state,
+        leagues
     )
 
     save_state(state)
