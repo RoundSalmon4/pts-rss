@@ -52,7 +52,7 @@ def load_state():
         if isinstance(items, list):
             new_dict = {}
             for item in items:
-                new_dict[item] = item
+                new_dict[item] = ""
             data["published"][league] = new_dict
     return data
 
@@ -122,6 +122,8 @@ def write_feed(path, title, link, description, new_items):
 
     ElementTree(rss).write(path, encoding="utf-8", xml_declaration=True)
 
+SCORE_CACHE = {}
+
 def write_feed_from_state(path, title, link, description, league, state):
     rss = Element("rss", version="2.0")
     channel = SubElement(rss, "channel")
@@ -135,8 +137,25 @@ def write_feed_from_state(path, title, link, description, league, state):
             published.update(league_guids)
     else:
         published = state.get("published", {}).get(league, {})
+
+    leagues = discover_leagues()
+    league_url = leagues.get(league, "")
     
     for gid, title_text in published.items():
+        if not title_text or title_text == gid:
+            match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
+            if match:
+                league_key, team1, team2, date = match.groups()
+                date_url = f"{league_url}{date}/"
+                if date_url not in SCORE_CACHE:
+                    print(f"Fetching for scores: {date_url}")
+                    SCORE_CACHE[date_url] = extract_games(fetch(date_url))
+                for away, home, ot in SCORE_CACHE.get(date_url, []):
+                    if (away[0] == team1 and home[0] == team2) or (away[0] == team2 and home[0] == team1):
+                        suffix = " (OT)" if ot else ""
+                        title_text = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
+                        break
+        
         it = SubElement(channel, "item")
         SubElement(it, "title").text = title_text
         SubElement(it, "link").text = link
