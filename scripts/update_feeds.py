@@ -47,7 +47,14 @@ TEAM_DIR.mkdir(parents=True, exist_ok=True)
 def load_state():
     if not STATE_FILE.exists():
         return {"published": {}}
-    return json.loads(STATE_FILE.read_text())
+    data = json.loads(STATE_FILE.read_text())
+    for league, items in data.get("published", {}).items():
+        if isinstance(items, list):
+            new_dict = {}
+            for item in items:
+                new_dict[item] = item
+            data["published"][league] = new_dict
+    return data
 
 def save_state(state):
     STATE_FILE.write_text(json.dumps(state, indent=2))
@@ -123,22 +130,18 @@ def write_feed_from_state(path, title, link, description, league, state):
     SubElement(channel, "description").text = description
 
     if league == "all":
-        published = []
+        published = {}
         for league_guids in state.get("published", {}).values():
-            published.extend(league_guids)
+            published.update(league_guids)
     else:
-        published = state.get("published", {}).get(league, [])
+        published = state.get("published", {}).get(league, {})
     
-    for gid in published:
-        match = re.match(r"([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid.replace(f"{league}-", ""))
-        if match:
-            team1, team2, date = match.groups()
-            title_text = f"{team1} {team2} (Final)"
-            it = SubElement(channel, "item")
-            SubElement(it, "title").text = title_text
-            SubElement(it, "link").text = link
-            SubElement(it, "guid").text = gid
-            SubElement(it, "pubDate").text = datetime.now(TIMEZONE).strftime("%a, %d %b %Y %H:%M:%S %z")
+    for gid, title_text in published.items():
+        it = SubElement(channel, "item")
+        SubElement(it, "title").text = title_text
+        SubElement(it, "link").text = link
+        SubElement(it, "guid").text = gid
+        SubElement(it, "pubDate").text = datetime.now(TIMEZONE).strftime("%a, %d %b %Y %H:%M:%S %z")
 
     placeholder_guid = f"{league}-placeholder"
     if not published:
@@ -166,8 +169,7 @@ def main():
     print(f"Leagues: {leagues}")
 
     for league, url in leagues.items():
-        state["published"].setdefault(league, [])
-        league_new = []
+        state["published"].setdefault(league, {})
 
         for date_str in [today, yesterday, two_days_ago, three_days_ago]:
             if date_str == today:
@@ -186,8 +188,7 @@ def main():
                     continue
                 suffix = " (OT)" if ot else ""
                 title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
-                state["published"][league].append(gid)
-                league_new.append((gid, title))
+                state["published"][league][gid] = title
                 all_new.append((gid, f"{league.upper()}: {title}"))
                 for team in (away[0], home[0]):
                     team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
