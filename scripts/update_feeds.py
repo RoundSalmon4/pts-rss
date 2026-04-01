@@ -153,7 +153,14 @@ def write_feed_from_state(path, title, link, description, league, state, leagues
         if new_items_only:
             continue
         
-        if (not title_text or title_text == gid) and league != "all":
+        if league == "all":
+            match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
+            if match:
+                league_key = match.group(1)
+                title_with_league = f"{league_key.upper()}: {title_text}"
+            else:
+                title_with_league = title_text
+        elif (not title_text or title_text == gid) and league != "all":
             match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
             if match:
                 league_key, team1, team2, date = match.groups()
@@ -166,12 +173,15 @@ def write_feed_from_state(path, title, link, description, league, state, leagues
                         suffix = " (OT)" if ot else ""
                         title_text = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
                         break
+            title_with_league = title_text
+        else:
+            title_with_league = title_text
         
-        if not title_text or title_text == gid:
-            title_text = gid
+        if not title_with_league or title_with_league == gid:
+            title_with_league = gid
         
         it = SubElement(channel, "item")
-        SubElement(it, "title").text = str(title_text)
+        SubElement(it, "title").text = str(title_with_league)
         SubElement(it, "link").text = link
         SubElement(it, "guid").text = gid
         SubElement(it, "pubDate").text = datetime.now(TIMEZONE).strftime("%a, %d %b %Y %H:%M:%S %z")
