@@ -115,11 +115,11 @@ def write_feed(path, title, link, description, new_items, state=None):
 
     for gid, txt in new_items:
         if state:
-            for league_items in state.get("published", {}).values():
+            for league_key, league_items in state.get("published", {}).items():
                 if gid in league_items:
                     stored_title = league_items[gid]
                     if stored_title and stored_title != gid:
-                        txt = stored_title
+                        txt = f"{league_key.upper()}: {stored_title}"
                     break
         it = SubElement(channel, "item")
         SubElement(it, "title").text = txt
@@ -160,21 +160,20 @@ def write_feed_from_state(path, title, link, description, league, state, leagues
                     title_with_league = f"{league_key.upper()}: {title_text}"
             else:
                 title_with_league = title_text if title_text else gid
-        elif not new_items_only and (not title_text or title_text == gid) and league != "all":
-            match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
-            if match:
-                league_key, team1, team2, date = match.groups()
-                date_url = f"{league_url}{date}/"
-                if date_url not in SCORE_CACHE:
-                    print(f"Fetching for scores: {date_url}")
-                    SCORE_CACHE[date_url] = extract_games(fetch(date_url))
-                for away, home, ot in SCORE_CACHE.get(date_url, []):
-                    if (away[0] == team1 and home[0] == team2) or (away[0] == team2 and home[0] == team1):
-                        suffix = " (OT)" if ot else ""
-                        title_text = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
-                        break
-            title_with_league = title_text if title_text else gid
         else:
+            if not new_items_only and (not title_text or title_text == gid):
+                match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
+                if match:
+                    league_key, team1, team2, date = match.groups()
+                    date_url = f"{league_url}{date}/"
+                    if date_url not in SCORE_CACHE:
+                        print(f"Fetching for scores: {date_url}")
+                        SCORE_CACHE[date_url] = extract_games(fetch(date_url))
+                    for away, home, ot in SCORE_CACHE.get(date_url, []):
+                        if (away[0] == team1 and home[0] == team2) or (away[0] == team2 and home[0] == team1):
+                            suffix = " (OT)" if ot else ""
+                            title_text = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
+                            break
             title_with_league = title_text if title_text else gid
         
         if not title_with_league or title_with_league == gid:
