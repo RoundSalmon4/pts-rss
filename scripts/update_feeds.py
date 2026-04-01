@@ -103,7 +103,7 @@ def load_existing_items(path):
             items.append(item)
     return items
 
-def write_feed(path, title, link, description, new_items):
+def write_feed(path, title, link, description, new_items, state=None):
     rss = Element("rss", version="2.0")
     channel = SubElement(rss, "channel")
     SubElement(channel, "title").text = title
@@ -114,6 +114,13 @@ def write_feed(path, title, link, description, new_items):
         channel.append(item)
 
     for gid, txt in new_items:
+        if state:
+            for league_items in state.get("published", {}).values():
+                if gid in league_items:
+                    stored_title = league_items[gid]
+                    if stored_title and stored_title != gid:
+                        txt = stored_title
+                    break
         it = SubElement(channel, "item")
         SubElement(it, "title").text = txt
         SubElement(it, "link").text = link
@@ -215,7 +222,7 @@ def main():
                 all_new.append((gid, f"{league.upper()}: {title}"))
                 for team in (away[0], home[0]):
                     team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
-                    write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)])
+                    write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)], state)
 
         if all_new:
             write_feed(
@@ -223,7 +230,8 @@ def main():
                 f"Plain Text Sports – {league.upper()} Finals",
                 url,
                 f"{league.upper()} final scores",
-                all_new
+                all_new,
+                state
             )
         else:
             write_feed_from_state(
@@ -237,17 +245,14 @@ def main():
                 new_items_only=True
             )
 
-    all_league_new = []
-    for league, url in leagues.items():
-        all_league_new.extend(state["published"].get(league, {}).values())
-
-    if all_league_new:
+    if all_new:
         write_feed(
             RSS_DIR / "all-finals.xml",
             "Plain Text Sports – All Finals",
             "https://plaintextsports.com",
             "All leagues final scores",
-            all_new
+            all_new,
+            state
         )
     else:
         write_feed_from_state(
