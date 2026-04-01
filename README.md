@@ -43,4 +43,4 @@ The script auto-discovers available sports. Current sports include:
 - Published immediately when the game goes FINAL
 - OT games are marked `(OT)` in the title
 - pubDate is UTC (RSS-safe)
-- Updated automatically by GitHub Actions every 10 minutes
+- Updated automatically by GitHub Actions every 10-30 minutes
