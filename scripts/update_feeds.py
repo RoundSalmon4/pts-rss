@@ -167,8 +167,11 @@ def write_feed_from_state(path, title, link, description, league, state, leagues
                         title_text = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
                         break
         
+        if not title_text or title_text == gid:
+            title_text = gid
+        
         it = SubElement(channel, "item")
-        SubElement(it, "title").text = title_text
+        SubElement(it, "title").text = str(title_text)
         SubElement(it, "link").text = link
         SubElement(it, "guid").text = gid
         SubElement(it, "pubDate").text = datetime.now(TIMEZONE).strftime("%a, %d %b %Y %H:%M:%S %z")
