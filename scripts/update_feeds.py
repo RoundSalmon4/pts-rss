@@ -203,6 +203,7 @@ def main():
 
     for league, url in leagues.items():
         state["published"].setdefault(league, {})
+        league_new = []
 
         for date_str in [today, yesterday, two_days_ago, three_days_ago]:
             if date_str == today:
@@ -222,18 +223,19 @@ def main():
                 suffix = " (OT)" if ot else ""
                 title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
                 state["published"][league][gid] = title
+                league_new.append((gid, f"{league.upper()}: {title}"))
                 all_new.append((gid, f"{league.upper()}: {title}"))
                 for team in (away[0], home[0]):
                     team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
                     write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)], state)
 
-        if all_new:
+        if league_new:
             write_feed(
                 RSS_DIR / f"{league}.xml",
                 f"Plain Text Sports – {league.upper()} Finals",
                 url,
                 f"{league.upper()} final scores",
-                all_new,
+                league_new,
                 state
             )
         else:
