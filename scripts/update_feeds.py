@@ -150,17 +150,17 @@ def write_feed_from_state(path, title, link, description, league, state, leagues
         league_url = leagues.get(league, "")
     
     for gid, title_text in published.items():
-        if new_items_only:
-            continue
-        
         if league == "all":
             match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
             if match:
                 league_key = match.group(1)
-                title_with_league = f"{league_key.upper()}: {title_text}"
+                if not title_text or title_text == gid:
+                    title_with_league = gid
+                else:
+                    title_with_league = f"{league_key.upper()}: {title_text}"
             else:
-                title_with_league = title_text
-        elif (not title_text or title_text == gid) and league != "all":
+                title_with_league = title_text if title_text else gid
+        elif not new_items_only and (not title_text or title_text == gid) and league != "all":
             match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
             if match:
                 league_key, team1, team2, date = match.groups()
@@ -173,9 +173,9 @@ def write_feed_from_state(path, title, link, description, league, state, leagues
                         suffix = " (OT)" if ot else ""
                         title_text = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
                         break
-            title_with_league = title_text
+            title_with_league = title_text if title_text else gid
         else:
-            title_with_league = title_text
+            title_with_league = title_text if title_text else gid
         
         if not title_with_league or title_with_league == gid:
             title_with_league = gid
