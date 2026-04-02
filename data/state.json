@@ -46,7 +46,16 @@
       "nba-SAC-TOR-2026-04-01": "SAC 123 \u2013 TOR 115 (Final)",
       "nba-MIL-HOU-2026-04-01": "MIL 113 \u2013 HOU 119 (Final)",
       "nba-DEN-UTA-2026-04-01": "DEN 130 \u2013 UTA 117 (Final)",
-      "nba-SAS-GSW-2026-04-01": "SAS 127 \u2013 GSW 113 (Final)"
+      "nba-SAS-GSW-2026-04-01": "SAS 127 \u2013 GSW 113 (Final)",
+      "nba-PHI-WAS-2026-04-02": "PHI 153 \u2013 WAS 131 (Final)",
+      "nba-ATL-ORL-2026-04-02": "ATL 130 \u2013 ORL 101 (Final)",
+      "nba-BOS-MIA-2026-04-02": "BOS 147 \u2013 MIA 129 (Final)",
+      "nba-NYK-MEM-2026-04-02": "NYK 130 \u2013 MEM 119 (Final)",
+      "nba-IND-CHI-2026-04-02": "IND 145 \u2013 CHI 126 (Final)",
+      "nba-SAC-TOR-2026-04-02": "SAC 123 \u2013 TOR 115 (Final)",
+      "nba-MIL-HOU-2026-04-02": "MIL 113 \u2013 HOU 119 (Final)",
+      "nba-DEN-UTA-2026-04-02": "DEN 130 \u2013 UTA 117 (Final)",
+      "nba-SAS-GSW-2026-04-02": "SAS 127 \u2013 GSW 113 (Final)"
     },
     "mlb": {
       "mlb-MIN-KC-2026-03-30": "mlb-MIN-KC-2026-03-30",
@@ -119,7 +128,22 @@
       "mlb-CLE-LAD-2026-04-01": "CLE 1 \u2013 LAD 4 (Final)",
       "mlb-SF-SD-2026-03-31": "SF 9 \u2013 SD 3 (Final)",
       "mlb-CLE-LAD-2026-03-31": "CLE 1 \u2013 LAD 4 (Final)",
-      "mlb-MIN-KC-2026-04-01": "MIN 9 \u2013 KC 13 (Final)"
+      "mlb-MIN-KC-2026-04-01": "MIN 9 \u2013 KC 13 (Final)",
+      "mlb-ATH-ATL-2026-04-02": "ATH 1 \u2013 ATL 5 (Final)",
+      "mlb-TEX-BAL-2026-04-02": "TEX 3 \u2013 BAL 8 (Final)",
+      "mlb-PIT-CIN-2026-04-02": "PIT 8 \u2013 CIN 3 (Final)",
+      "mlb-WSH-PHI-2026-04-02": "WSH 5 \u2013 PHI 6 (Final)",
+      "mlb-COL-TOR-2026-04-02": "COL 2 \u2013 TOR 1 (Final)",
+      "mlb-CWS-MIA-2026-04-02": "CWS 0 \u2013 MIA 10 (Final)",
+      "mlb-NYM-STL-2026-04-02": "NYM 1 \u2013 STL 2 (Final)",
+      "mlb-TB-MIL-2026-04-02": "TB 2 \u2013 MIL 8 (Final)",
+      "mlb-BOS-HOU-2026-04-02": "BOS 4 \u2013 HOU 6 (Final)",
+      "mlb-LAA-CHC-2026-04-02": "LAA 2 \u2013 CHC 6 (Final)",
+      "mlb-DET-ARI-2026-04-02": "DET 0 \u2013 ARI 1 (Final)",
+      "mlb-SF-SD-2026-04-02": "SF 1 \u2013 SD 7 (Final)",
+      "mlb-NYY-SEA-2026-04-02": "NYY 5 \u2013 SEA 3 (Final)",
+      "mlb-MIN-KC-2026-04-02": "MIN 9 \u2013 KC 13 (Final)",
+      "mlb-CLE-LAD-2026-04-02": "CLE 4 \u2013 LAD 1 (Final)"
     },
     "nhl": {
       "nhl-PIT-NYI-2026-03-30": "nhl-PIT-NYI-2026-03-30",
@@ -170,7 +194,10 @@
       "nhl-SEA-EDM-2026-04-01": "SEA 0 \u2013 EDM 3 (Final)",
       "nhl-VAN-COL-2026-04-01": "VAN 8 \u2013 COL 6 (Final)",
       "nhl-STL-LAK-2026-04-01": "STL 1 \u2013 LAK 2 (Final) (OT)",
-      "nhl-ANA-SJS-2026-04-01": "ANA 3 \u2013 SJS 4 (Final)"
+      "nhl-ANA-SJS-2026-04-01": "ANA 3 \u2013 SJS 4 (Final)",
+      "nhl-VAN-COL-2026-04-02": "VAN 8 \u2013 COL 6 (Final)",
+      "nhl-STL-LAK-2026-04-02": "STL 1 \u2013 LAK 2 (Final) (OT)",
+      "nhl-ANA-SJS-2026-04-02": "ANA 3 \u2013 SJS 4 (Final)"
     },
     "nfl": {},
     "ncaamb": {},
