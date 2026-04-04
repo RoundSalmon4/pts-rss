@@ -4,6 +4,8 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from xml.etree.ElementTree import Element, SubElement, ElementTree
 from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
 
 ROOT = Path(__file__).parent.parent
 STATE_FILE = ROOT / "data" / "state.json"
@@ -110,10 +112,16 @@ def write_feed(path, title, link, description, new_items, state=None):
     SubElement(channel, "link").text = link
     SubElement(channel, "description").text = description
 
+    existing_guids = set()
     for item in load_existing_items(path):
-        channel.append(item)
+        guid = item.find("guid")
+        if guid is not None and guid.text:
+            existing_guids.add(guid.text)
+            channel.append(item)
 
     for gid, txt in new_items:
+        if gid in existing_guids:
+            continue
         if state:
             for league_key, league_items in state.get("published", {}).items():
                 if gid in league_items:
@@ -121,6 +129,7 @@ def write_feed(path, title, link, description, new_items, state=None):
                     if stored_title and stored_title != gid:
                         txt = f"{league_key.upper()}: {stored_title}"
                     break
+        existing_guids.add(gid)
         it = SubElement(channel, "item")
         SubElement(it, "title").text = txt
         SubElement(it, "link").text = link
@@ -145,11 +154,21 @@ def write_feed_from_state(path, title, link, description, league, state, leagues
     else:
         published = state.get("published", {}).get(league, {})
 
+    existing_guids = set()
+    if path.exists():
+        for item in load_existing_items(path):
+            guid = item.find("guid")
+            if guid is not None and guid.text:
+                existing_guids.add(guid.text)
+                channel.append(item)
+
     league_url = ""
     if league != "all" and leagues:
         league_url = leagues.get(league, "")
     
     for gid, title_text in published.items():
+        if gid in existing_guids:
+            continue
         if league == "all":
             match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
             if match:
@@ -176,6 +195,7 @@ def write_feed_from_state(path, title, link, description, league, state, leagues
         if not title_with_league or title_with_league == gid:
             title_with_league = gid
         
+        existing_guids.add(gid)
         it = SubElement(channel, "item")
         SubElement(it, "title").text = str(title_with_league)
         SubElement(it, "link").text = link
@@ -207,21 +227,48 @@ def main():
     leagues = discover_leagues()
     print(f"Leagues: {leagues}")
 
+    fetch_lock = threading.Lock()
+    html_cache = {}
+    games_cache = {}
+
+    def fetch_date_combo(args):
+        league, url, date_str = args
+        if date_str == today:
+            check_url = url
+        else:
+            check_url = f"{url}{date_str}/"
+        
+        with fetch_lock:
+            print(f"Checking {league} {date_str}: {check_url}")
+            html = fetch(check_url)
+            games = extract_games(html)
+            print(f"  Games from {date_str}: {games}")
+        
+        cache_key = (league, date_str)
+        with fetch_lock:
+            games_cache[cache_key] = games
+        return league, date_str, games
+
+    fetch_tasks = []
+    for league, url in leagues.items():
+        for date_str in [today, yesterday, two_days_ago, three_days_ago]:
+            fetch_tasks.append((league, url, date_str))
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(fetch_date_combo, task) for task in fetch_tasks]
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                print(f"Error fetching: {e}")
+
     for league, url in leagues.items():
         state["published"].setdefault(league, {})
         league_new = []
 
         for date_str in [today, yesterday, two_days_ago, three_days_ago]:
-            if date_str == today:
-                check_url = url
-            else:
-                check_url = f"{url}{date_str}/"
+            games = games_cache.get((league, date_str), [])
             
-            print(f"Checking {league} {date_str}: {check_url}")
-            html = fetch(check_url)
-            games = extract_games(html)
-            print(f"  Games from {date_str}: {games}")
-
             for away, home, ot in games:
                 gid = f"{league}-{away[0]}-{home[0]}-{date_str}"
                 if gid in state["published"][league]:
