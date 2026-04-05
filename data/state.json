@@ -148,12 +148,32 @@
       "nhl-BUF-WSH-2026-04-04": "BUF 2 \u2013 WSH 6 (Final)",
       "nhl-NYI-CAR-2026-04-04": "NYI 3 \u2013 CAR 4 (Final)",
       "nhl-WPG-CBJ-2026-04-04": "WPG 2 \u2013 CBJ 1 (Final)",
-      "nhl-MTL-NJD-2026-04-04": "MTL 4 \u2013 NJD 3 (Final)"
+      "nhl-MTL-NJD-2026-04-04": "MTL 4 \u2013 NJD 3 (Final)",
+      "nhl-UTA-VAN-2026-04-04": "UTA 7 \u2013 VAN 4 (Final)"
     },
     "nfl": {},
     "wnba": {},
-    "ncaamb": {},
-    "ncaawb": {},
+    "ncaamb": {
+      "ncaamb-UCONN-ILL-2026-04-04": "UCONN 2 \u2013 ILL 71 (Final)",
+      "ncaamb-OKLA-BAYLOR-2026-04-04": "OKLA 82 \u2013 BAYLOR 69 (Final)",
+      "ncaamb-WVU-CREIGH-2026-04-04": "WVU 87 \u2013 CREIGH 70 (Final)",
+      "ncaamb-MEX-TULSA-2026-04-02": "MEX 69 \u2013 TULSA 74 (Final)",
+      "ncaamb-STAN-WVU-2026-04-02": "STAN 77 \u2013 WVU 82 (Final)",
+      "ncaamb-AUBURN-ILL-2026-04-02": "AUBURN 88 \u2013 ILL 66 (Final)",
+      "ncaamb-RUTGER-CREIGH-2026-04-02": "RUTGER 69 \u2013 CREIGH 82 (Final)",
+      "ncaamb-OKLA-COLO-2026-04-01": "OKLA 90 \u2013 COLO 86 (Final)",
+      "ncaamb-BAYLOR-MINN-2026-04-01": "BAYLOR 67 \u2013 MINN 48 (Final)"
+    },
+    "ncaawb": {
+      "ncaawb-UCONN-CAR-2026-04-04": "UCONN 1 \u2013 CAR 48 (Final)",
+      "ncaawb-UCLA-TEXAS-2026-04-04": "UCLA 1 \u2013 TEXAS 51 (Final)",
+      "ncaawb-ILL-ST-2026-04-04": "ILL 41 \u2013 ST 66 (Final)",
+      "ncaawb-UCONN-CAR-2026-04-03": "UCONN 1 \u2013 CAR 48 (Final)",
+      "ncaawb-UCLA-TEXAS-2026-04-03": "UCLA 1 \u2013 TEXAS 51 (Final)",
+      "ncaawb-COLUMB-BYU-2026-04-01": "COLUMB 81 \u2013 BYU 64 (Final)",
+      "ncaawb-MARSH-ARK-2026-04-01": "MARSH 69 \u2013 ARK 62 (Final)",
+      "ncaawb-ILL-ST-2026-04-01": "ILL 67 \u2013 ST 60 (Final) (OT)"
+    },
     "champions-league": {},
     "europa-league": {},
     "premier-league": {},
