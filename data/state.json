@@ -181,7 +181,26 @@
     "europa-league": {},
     "premier-league": {},
     "world-cup": {},
-    "mls": {},
-    "nwsl": {}
+    "mls": {
+      "mls-TOR-COL-2026-04-04": "TOR 3 \u2013 COL 2 (Final)",
+      "mls-RSL-SKC-2026-04-04": "RSL 3 \u2013 SKC 1 (Final)",
+      "mls-NER-MTL-2026-04-04": "NER 3 \u2013 MTL 0 (Final)",
+      "mls-RBNY-CIN-2026-04-04": "RBNY 4 \u2013 CIN 2 (Final)",
+      "mls-NYC-STL-2026-04-04": "NYC 1 \u2013 STL 1 (Final)",
+      "mls-MIA-ATX-2026-04-04": "MIA 2 \u2013 ATX 2 (Final)",
+      "mls-DC-DAL-2026-04-04": "DC 0 \u2013 DAL 4 (Final)",
+      "mls-CLT-PHI-2026-04-04": "CLT 2 \u2013 PHI 1 (Final)",
+      "mls-ATL-CLB-2026-04-04": "ATL 1 \u2013 CLB 3 (Final)",
+      "mls-CHI-NSH-2026-04-04": "CHI 1 \u2013 NSH 0 (Final)"
+    },
+    "nwsl": {
+      "nwsl-KC-NJ-2026-04-04": "KC 2 \u2013 NJ 1 (Final)",
+      "nwsl-NC-POR-2026-04-04": "NC 2 \u2013 POR 2 (Final)",
+      "nwsl-SEA-DEN-2026-04-04": "SEA 0 \u2013 DEN 0 (Final)",
+      "nwsl-BOS-SAN-2026-04-03": "BOS 0 \u2013 SAN 1 (Final)",
+      "nwsl-ORL-ANG-2026-04-03": "ORL 2 \u2013 ANG 1 (Final)",
+      "nwsl-HOU-RAC-2026-04-03": "HOU 4 \u2013 RAC 3 (Final)",
+      "nwsl-UTA-CHI-2026-04-03": "UTA 1 \u2013 CHI 0 (Final)"
+    }
   }
 }
