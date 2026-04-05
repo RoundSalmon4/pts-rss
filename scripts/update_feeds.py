@@ -87,6 +87,26 @@ def extract_games(html):
             print(f"    ADDED from link: {team_scores}")
     
     if not games:
+        pre_tags = soup.find_all("pre")
+        for pre in pre_tags:
+            text = pre.get_text()
+            lines = text.split("\n")
+            for line in lines:
+                if "Final" in line or "final" in line:
+                    parts = line.split()
+                    teams = []
+                    scores = []
+                    for part in parts:
+                        if re.match(r"^[A-Z]{2,6}$", part):
+                            teams.append(part)
+                        elif re.match(r"^\d+$", part):
+                            scores.append(part)
+                    if len(teams) >= 2 and len(scores) >= 2:
+                        ot = "OT" in line
+                        games.append(((teams[0], scores[0]), (teams[1], scores[1]), ot))
+                        print(f"    ADDED from pre: {teams[0]} {scores[0]} vs {teams[1]} {scores[1]}")
+    
+    if not games:
         tables = soup.find_all("table")
         for table in tables:
             rows = table.find_all("tr")
