@@ -127,8 +127,8 @@
       "mlb-ATL-ARI-2026-04-05": "ATL 5 \u2013 ARI 6 (Final)",
       "mlb-PHI-COL-2026-04-05": "PHI 1 \u2013 COL 4 (Final)",
       "mlb-NYM-SF-2026-04-05": "NYM 5 \u2013 SF 2 (Final)",
-      "mlb-SEA-LAA-2026-04-05": "SEA 0 \u2013 LAA 1 (Final)",
-      "mlb-CHC-CLE-2026-04-05": "CHC 1 \u2013 CLE 0 (Final)"
+      "mlb-SEA-LAA-2026-04-05": "SEA 7 \u2013 LAA 8 (Final)",
+      "mlb-CHC-CLE-2026-04-05": "CHC 5 \u2013 CLE 6 (Final)"
     },
     "nhl": {
       "nhl-BUF-OTT-2026-04-02": "BUF 1 \u2013 OTT 4 (Final) (OT)",
@@ -193,7 +193,8 @@
       "nhl-NSH-SJS-2026-04-04": "NSH 6 \u2013 SJS 3 (Final)",
       "nhl-CHI-SEA-2026-04-04": "CHI 4 \u2013 SEA 2 (Final)",
       "nhl-MIN-DET-2026-04-05": "MIN 5 \u2013 DET 4 (Final)",
-      "nhl-BOS-PHI-2026-04-05": "BOS 1 \u2013 PHI 2 (Final) (OT)"
+      "nhl-BOS-PHI-2026-04-05": "BOS 1 \u2013 PHI 2 (Final) (OT)",
+      "nhl-CAR-OTT-2026-04-05": "CAR 3 \u2013 OTT 6 (Final) (OT)"
     },
     "nfl": {},
     "wnba": {},
@@ -211,7 +212,8 @@
       "ncaamb-UCONN-ILL-2026-04-05": "UCONN 71 \u2013 ILL 62 (Final)",
       "ncaamb-ARIZ-MICH-2026-04-05": "ARIZ 73 \u2013 MICH 91 (Final)",
       "ncaamb-OKLA-BAYLOR-2026-04-05": "OKLA 82 \u2013 BAYLOR 69 (Final)",
-      "ncaamb-WVU-CREIGH-2026-04-05": "WVU 87 \u2013 CREIGH 70 (Final)"
+      "ncaamb-WVU-CREIGH-2026-04-05": "WVU 87 \u2013 CREIGH 70 (Final)",
+      "ncaamb-OKLA-WVU-2026-04-05": "OKLA 82 \u2013 WVU 89 (Final)"
     },
     "ncaawb": {
       "ncaawb-UCONN-CAR-2026-04-04": "UCONN 48 \u2013 CAR 62 (Final)",
