@@ -257,13 +257,6 @@ def write_feed(path, title, link, description, new_items, state=None):
     for gid, txt in new_items:
         if gid in existing_guids:
             continue
-        if state:
-            for league_key, league_items in state.get("published", {}).items():
-                if gid in league_items:
-                    stored_title = league_items[gid]
-                    if stored_title and stored_title != gid:
-                        txt = f"{league_key.upper()}: {stored_title}"
-                    break
         existing_guids.add(gid)
         it = SubElement(channel, "item")
         SubElement(it, "title").text = txt
