@@ -99,10 +99,10 @@
       "mlb-TB-MIN-2026-04-04": "TB 7 \u2013 MIN 1 (Final)",
       "mlb-PHI-COL-2026-04-04": "PHI 2 \u2013 COL 1 (Final)",
       "mlb-BAL-PIT-2026-04-04": "BAL 2 \u2013 PIT 3 (Final)",
-      "mlb-SEA-LAA-2026-04-04": "SEA 3 \u2013 LAA 1 (Final)",
+      "mlb-SEA-LAA-2026-04-04": "SEA 0 \u2013 LAA 1 (Final)",
       "mlb-HOU-ATH-2026-04-04": "HOU 11 \u2013 ATH 0 (Final)",
       "mlb-ATL-ARI-2026-04-04": "ATL 1 \u2013 ARI 2 (Final)",
-      "mlb-NYM-SF-2026-04-04": "NYM 10 \u2013 SF 3 (Final)",
+      "mlb-NYM-SF-2026-04-04": "NYM 9 \u2013 SF 0 (Final)",
       "mlb-SEA-LAA-2026-04-03": "SEA 3 \u2013 LAA 1 (Final)",
       "mlb-HOU-ATH-2026-04-03": "HOU 4 \u2013 ATH 11 (Final)",
       "mlb-NYM-SF-2026-04-03": "NYM 10 \u2013 SF 3 (Final)",
@@ -163,7 +163,8 @@
       "ncaamb-AUBURN-ILL-2026-04-02": "AUBURN 88 \u2013 ILL 66 (Final)",
       "ncaamb-RUTGER-CREIGH-2026-04-02": "RUTGER 69 \u2013 CREIGH 82 (Final)",
       "ncaamb-OKLA-COLO-2026-04-01": "OKLA 90 \u2013 COLO 86 (Final)",
-      "ncaamb-BAYLOR-MINN-2026-04-01": "BAYLOR 67 \u2013 MINN 48 (Final)"
+      "ncaamb-BAYLOR-MINN-2026-04-01": "BAYLOR 67 \u2013 MINN 48 (Final)",
+      "ncaamb-ARIZ-MICH-2026-04-04": "ARIZ 73 \u2013 MICH 91 (Final)"
     },
     "ncaawb": {
       "ncaawb-UCONN-CAR-2026-04-04": "UCONN 48 \u2013 CAR 62 (Final)",
@@ -192,7 +193,8 @@
       "mls-CLT-PHI-2026-04-04": "CLT 2 \u2013 PHI 1 (Final)",
       "mls-ATL-CLB-2026-04-04": "ATL 1 \u2013 CLB 3 (Final)",
       "mls-CHI-NSH-2026-04-04": "CHI 1 \u2013 NSH 0 (Final)",
-      "mls-HOU-SEA-2026-04-04": "HOU 0 \u2013 SEA 1 (Final)"
+      "mls-HOU-SEA-2026-04-04": "HOU 0 \u2013 SEA 1 (Final)",
+      "mls-LAFC-ORL-2026-04-04": "LAFC 6 \u2013 ORL 0 (Final)"
     },
     "nwsl": {
       "nwsl-KC-NJ-2026-04-04": "KC 2 \u2013 NJ 1 (Final)",
