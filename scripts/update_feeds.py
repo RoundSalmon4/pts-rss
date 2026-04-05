@@ -67,7 +67,7 @@ def fetch(url):
     print(f"Status: {response.status_code}, Length: {len(response.text)}")
     return response.text
 
-def extract_games(html):
+def extract_games(html, league=None):
     soup = BeautifulSoup(html, "html.parser")
     games = []
     
@@ -78,11 +78,11 @@ def extract_games(html):
         if "/20" not in href:
             continue
         text = game.get_text()
-        if "Final" not in text:
+        if "Final" not in text and "FT" not in text:
             continue
         team_scores = re.findall(r"([A-Z]{2,3})\s+(\d+)", text)
         if len(team_scores) == 2:
-            ot = "OT" in text
+            ot = "OT" in text or "SO" in text
             games.append(((team_scores[0][0], team_scores[0][1]), (team_scores[1][0], team_scores[1][1]), ot))
             print(f"    ADDED from link: {team_scores}")
     
@@ -90,21 +90,41 @@ def extract_games(html):
         pre_tags = soup.find_all("pre")
         for pre in pre_tags:
             text = pre.get_text()
-            lines = text.split("\n")
-            for line in lines:
-                if "Final" in line or "final" in line:
-                    parts = line.split()
-                    teams = []
-                    scores = []
-                    for part in parts:
-                        if re.match(r"^[A-Z]{2,6}$", part):
-                            teams.append(part)
-                        elif re.match(r"^\d+$", part):
-                            scores.append(part)
-                    if len(teams) >= 2 and len(scores) >= 2:
-                        ot = "OT" in line
-                        games.append(((teams[0], scores[0]), (teams[1], scores[1]), ot))
-                        print(f"    ADDED from pre: {teams[0]} {scores[0]} vs {teams[1]} {scores[1]}")
+            lines = [l.strip() for l in text.split("\n") if l.strip()]
+            
+            i = 0
+            while i < len(lines):
+                line = lines[i]
+                if "Final" in line or "final" in line or "FT" in line:
+                    game_teams = []
+                    game_scores = []
+                    
+                    j = i + 1
+                    while j < len(lines) and j < i + 4:
+                        next_line = lines[j]
+                        if "Final" in next_line or "FT" in next_line:
+                            break
+                        
+                        parts = next_line.replace("|", "").split()
+                        for part in parts:
+                            if re.match(r"^[A-Z]{2,6}$", part):
+                                game_teams.append(part)
+                            elif re.match(r"^\d+$", part):
+                                game_scores.append(part)
+                        
+                        if len(game_teams) >= 2 and len(game_scores) >= 2:
+                            break
+                        j += 1
+                    
+                    if len(game_teams) >= 2 and len(game_scores) >= 2:
+                        ot = "OT" in line or "SO" in line
+                        games.append(((game_teams[0], game_scores[0]), (game_teams[1], game_scores[1]), ot))
+                        print(f"    ADDED from pre: {game_teams[0]} {game_scores[0]} vs {game_teams[1]} {game_scores[1]}")
+                        i = j
+                    else:
+                        i += 1
+                else:
+                    i += 1
     
     if not games:
         tables = soup.find_all("table")
@@ -126,12 +146,12 @@ def extract_games(html):
                     if len(score_values) >= 2 and len(teams) >= 2:
                         final_idx = None
                         for i, text in enumerate(cell_texts):
-                            if "Final" in text or "final" in text:
+                            if "Final" in text or "final" in text or "FT" in text:
                                 final_idx = i
                                 break
                         
                         if final_idx is not None or len(score_values) >= 2:
-                            ot = "OT" in "".join(cell_texts)
+                            ot = "OT" in "".join(cell_texts) or "SO" in "".join(cell_texts)
                             games.append(((teams[0], score_values[0]), (teams[1], score_values[1]), ot))
                             print(f"    ADDED from table: {teams[0]} {score_values[0]} vs {teams[1]} {score_values[1]}")
     
