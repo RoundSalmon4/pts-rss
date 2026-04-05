@@ -7,6 +7,64 @@ from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 
+MLS_TEAM_CODES = {
+    "toronto-fc": "TOR",
+    "colorado-rapids": "COL",
+    "real-salt-lake": "RSL",
+    "sporting-kansas-city": "SKC",
+    "new-england-revolution": "NER",
+    "cf-montreal": "MTL",
+    "new-york-red-bulls": "RBNY",
+    "fc-cincinnati": "CIN",
+    "new-york-city-fc": "NYC",
+    "st-louis-city-sc": "STL",
+    "inter-miami-cf": "MIA",
+    "austin-fc": "ATX",
+    "dc-united": "DC",
+    "fc-dallas": "DAL",
+    "charlotte-fc": "CLT",
+    "philadelphia-union": "PHI",
+    "atlanta-united": "ATL",
+    "columbus-crew": "CLB",
+    "chicago-fire-fc": "CHI",
+    "nashville-sc": "NSH",
+    "houston-dynamo-fc": "HOU",
+    "seattle-sounders-fc": "SEA",
+    "los-angeles-football-club": "LAFC",
+    "orlando-city-sc": "ORL",
+    "vancouver-whitecaps-fc": "VAN",
+    "portland-timbers": "POR",
+    "san-jose-earthquakes": "SJE",
+    "san-diego-fc": "SD",
+    "la-galaxy": "LAG",
+    "minnesota-united-fc": "MIN",
+    "vancouver-whitecaps": "VAN",
+    "sporting-kc": "SKC",
+    "real-salt": "RSL",
+    "la-galaxy": "LAG",
+    "ny-red-bulls": "RBNY",
+}
+
+NWSL_TEAM_CODES = {
+    "portland-thorns-fc": "POR",
+    "north-carolina-courage": "NC",
+    "seattle-reign": "SEA",
+    "kansas-city-current": "KC",
+    "angel-city": "LA",
+    "orlando-pride": "ORL",
+    "houston-dash": "HOU",
+    "wash-nji": "WAS",
+    "chicago-red-stars": "CHI",
+    "sky-blue": "NJ",
+    "utah-royals": "UTA",
+    "gotham": "NJ",
+    "bay-fc": "BAY",
+    "san-diego-wave": "SD",
+    "nj-ny-gotham": "NJ",
+    "denver-summit": "DEN",
+    "portland-thorns": "POR",
+}
+
 ROOT = Path(__file__).parent.parent
 STATE_FILE = ROOT / "data" / "state.json"
 RSS_DIR = ROOT / "rss"
@@ -71,6 +129,8 @@ def extract_games(html, league=None):
     soup = BeautifulSoup(html, "html.parser")
     games = []
     
+    use_team_codes = MLS_TEAM_CODES if league in ["mls", "nwsl"] else None
+    
     links = soup.find_all("a", href=True)
     print(f"Found {len(links)} total links")
     for game in links:
@@ -99,6 +159,15 @@ def extract_games(html, league=None):
                     i = 0
                     while i < len(parts):
                         part = parts[i]
+                        
+                        seed_with_team = re.match(r"^(\d+)([A-Z]{2,6})$", part)
+                        if seed_with_team:
+                            team_name = seed_with_team.group(2)
+                            i += 1
+                            if i < len(parts) and parts[i].isdigit():
+                                teams_scores.append((team_name, parts[i]))
+                                i += 1
+                                continue
                         
                         seed_match = re.match(r"^(\d+)$", part)
                         if seed_match and i + 2 < len(parts):
@@ -172,9 +241,61 @@ def extract_games(html, league=None):
                         print(f"    ADDED from pre: {game_teams[0]} {game_scores[0]} vs {game_teams[1]} {game_scores[1]}")
                         i = j
                     else:
-                        i += 1
+                        score_match = re.search(r"(\d+)\s*-\s*FT\s*-\s*(\d+)", line)
+                        if score_match:
+                            a_hrefs = pre.find_all("a", href=True)
+                            teams_found = []
+                            for a in a_hrefs:
+                                team_text = a.get_text(strip=True)
+                                if team_text:
+                                    parts = team_text.split()
+                                    if parts:
+                                        last_word = parts[-1]
+                                        if len(last_word) >= 2:
+                                            teams_found.append(last_word)
+                            
+                            if len(teams_found) >= 2 and score_match:
+                                score1 = score_match.group(1)
+                                score2 = score_match.group(2)
+                                ot = "OT" in line or "SO" in line
+                                games.append(((teams_found[0], score1), (teams_found[1], score2), ot))
+                                print(f"    ADDED from pre (FT): {teams_found[0]} {score1} vs {teams_found[1]} {score2}")
+                                i += 1
+                            else:
+                                i += 1
+                        else:
+                            i += 1
                 else:
                     i += 1
+    
+    if not games:
+        game_divs = soup.find_all("div", id=True)
+        for div in game_divs:
+            div_id = div.get("id", "")
+            if div_id in ["page-loaded-wrapper", "full-width-line", "one-line"]:
+                continue
+            
+            text = div.get_text()
+            if " - FT - " in text:
+                score_match = re.search(r"(\d+)\s*-\s*FT\s*-\s*(\d+)", text)
+                if score_match:
+                    score1 = score_match.group(1)
+                    score2 = score_match.group(2)
+                    
+                    teams_found = []
+                    team_codes = MLS_TEAM_CODES if league == "mls" else (NWSL_TEAM_CODES if league == "nwsl" else {})
+                    for a in div.find_all("a", href=True):
+                        href = a.get("href", "")
+                        if "/teams/" in href:
+                            url_part = href.split("/")[-1]
+                            team_code = team_codes.get(url_part, url_part.split("-")[0].upper()[:3])
+                            if team_code and len(team_code) >= 2:
+                                teams_found.append(team_code)
+                    
+                    if len(teams_found) >= 2:
+                        ot = "OT" in text or "SO" in text
+                        games.append(((teams_found[0], score1), (teams_found[1], score2), ot))
+                        print(f"    ADDED from game div: {teams_found[0]} {score1} vs {teams_found[1]} {score2}")
     
     if not games:
         tables = soup.find_all("table")
@@ -377,7 +498,7 @@ def main():
         with fetch_lock:
             print(f"Checking {league} {date_str}: {check_url}")
             html = fetch(check_url)
-            games = extract_games(html)
+            games = extract_games(html, league)
             print(f"  Games from {date_str}: {games}")
         
         cache_key = (league, date_str)
