@@ -96,10 +96,15 @@ def extract_games(html, league=None):
                         continue
                     parts = line.replace("|", "").split()
                     for part in parts:
-                        if re.match(r"^[A-Z]{2,6}$", part):
-                            teams.append(part)
-                        elif re.match(r"^\d+$", part):
-                            scores.append(part)
+                        if re.match(r"^\d+$", part):
+                            if len(scores) < len(teams):
+                                scores.append(part)
+                        else:
+                            match = re.match(r"^(\d+)?([A-Z]{2,6})$", part)
+                            if match:
+                                teams.append(match.group(2))
+                                if match.group(1) and len(scores) < len(teams) - 1:
+                                    scores.append(match.group(1))
                 if len(teams) >= 2 and len(scores) >= 2:
                     ot = "OT" in text or "SO" in text
                     games.append(((teams[0], scores[0]), (teams[1], scores[1]), ot))
