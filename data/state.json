@@ -117,7 +117,7 @@
       "mlb-HOU-ATH-2026-04-05": "HOU 11 \u2013 ATH 0 (Final)",
       "mlb-BAL-PIT-2026-04-05": "BAL 2 \u2013 PIT 8 (Final)",
       "mlb-SD-BOS-2026-04-05": "SD 8 \u2013 BOS 6 (Final)",
-      "mlb-CIN-TEX-2026-04-05": "CIN 2 \u2013 TEX 0 (Final)",
+      "mlb-CIN-TEX-2026-04-05": "CIN 2 \u2013 TEX 1 (Final)",
       "mlb-MIA-NYY-2026-04-05": "MIA 7 \u2013 NYY 9 (Final)",
       "mlb-TB-MIN-2026-04-05": "TB 4 \u2013 MIN 1 (Final)",
       "mlb-ATL-ARI-2026-04-05": "ATL 1 \u2013 ARI 2 (Final)",
@@ -173,7 +173,7 @@
       "nhl-MIN-OTT-2026-04-05": "MIN 4 \u2013 OTT 1 (Final) (OT)",
       "nhl-COL-DAL-2026-04-05": "COL 2 \u2013 DAL 0 (Final)",
       "nhl-BOS-TBL-2026-04-05": "BOS 1 \u2013 TBL 3 (Final)",
-      "nhl-FLA-PIT-2026-04-05": "FLA 4 \u2013 PIT 9 (Final)",
+      "nhl-FLA-PIT-2026-04-05": "FLA 2 \u2013 PIT 5 (Final)",
       "nhl-MTL-NJD-2026-04-05": "MTL 4 \u2013 NJD 3 (Final) (OT)",
       "nhl-BUF-WSH-2026-04-05": "BUF 2 \u2013 WSH 6 (Final)",
       "nhl-NYI-CAR-2026-04-05": "NYI 3 \u2013 CAR 4 (Final)",
@@ -220,7 +220,8 @@
       "ncaawb-ILL-MARSH-2026-04-04": "ILL 41 \u2013 MARSH 66 (Final)",
       "ncaawb-ILL-SO-2026-04-01": "ILL 67 \u2013 SO 60 (Final) (OT)",
       "ncaawb-UCONN-CAR-2026-04-05": "UCONN 48 \u2013 CAR 62 (Final)",
-      "ncaawb-UCLA-TEXAS-2026-04-05": "UCLA 51 \u2013 TEXAS 44 (Final)"
+      "ncaawb-UCLA-TEXAS-2026-04-05": "UCLA 51 \u2013 TEXAS 44 (Final)",
+      "ncaawb-UCLA-CAR-2026-04-05": "UCLA 79 \u2013 CAR 51 (Final)"
     },
     "champions-league": {},
     "europa-league": {},
