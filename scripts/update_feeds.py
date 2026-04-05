@@ -75,16 +75,35 @@ def extract_games(html, league=None):
     print(f"Found {len(links)} total links")
     for game in links:
         href = game.get("href", "")
-        if "/20" not in href:
-            continue
+        
         text = game.get_text()
-        if "Final" not in text and "FT" not in text:
-            continue
-        team_scores = re.findall(r"([A-Z]{2,3})\s+(\d+)", text)
-        if len(team_scores) == 2:
-            ot = "OT" in text or "SO" in text
-            games.append(((team_scores[0][0], team_scores[0][1]), (team_scores[1][0], team_scores[1][1]), ot))
-            print(f"    ADDED from link: {team_scores}")
+        
+        if "/20" in href:
+            if "Final" not in text and "FT" not in text:
+                continue
+            team_scores = re.findall(r"([A-Z]{2,3})\s+(\d+)", text)
+            if len(team_scores) == 2:
+                ot = "OT" in text or "SO" in text
+                games.append(((team_scores[0][0], team_scores[0][1]), (team_scores[1][0], team_scores[1][1]), ot))
+                print(f"    ADDED from link: {team_scores}")
+        else:
+            if "Final" in text or "FT" in text:
+                lines = [l.strip() for l in text.split("\n") if l.strip()]
+                teams = []
+                scores = []
+                for line in lines:
+                    if "Final" in line or "FT" in line:
+                        continue
+                    parts = line.replace("|", "").split()
+                    for part in parts:
+                        if re.match(r"^[A-Z]{2,6}$", part):
+                            teams.append(part)
+                        elif re.match(r"^\d+$", part):
+                            scores.append(part)
+                if len(teams) >= 2 and len(scores) >= 2:
+                    ot = "OT" in text or "SO" in text
+                    games.append(((teams[0], scores[0]), (teams[1], scores[1]), ot))
+                    print(f"    ADDED from ext-link: {teams[0]} {scores[0]} vs {teams[1]} {scores[1]}")
     
     if not games:
         pre_tags = soup.find_all("pre")
