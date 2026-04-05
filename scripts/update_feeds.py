@@ -252,6 +252,14 @@ def write_feed(path, title, link, description, new_items, state=None):
         guid = item.find("guid")
         if guid is not None and guid.text:
             existing_guids.add(guid.text)
+            
+            for gid, new_title in new_items:
+                if gid == guid.text:
+                    title_elem = item.find("title")
+                    if title_elem is not None and title_elem.text != new_title:
+                        title_elem.text = new_title
+                    break
+            
             channel.append(item)
 
     for gid, txt in new_items:
