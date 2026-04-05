@@ -89,27 +89,49 @@ def extract_games(html, league=None):
         else:
             if "Final" in text or "FT" in text:
                 lines = [l.strip() for l in text.split("\n") if l.strip()]
-                game_pairs = []
+                teams_scores = []
                 
                 for line in lines:
                     if "Final" in line or "FT" in line:
                         continue
                     parts = line.replace("|", "").split()
-                    team = None
-                    score = None
-                    for part in parts:
-                        if part.isdigit() and score is None:
-                            score = part
-                        elif team is None:
-                            match = re.match(r"^(\d+)?([A-Z]{2,6})$", part)
-                            if match and len(match.group(2)) >= 2:
-                                team = match.group(2)
-                    if team and score:
-                        game_pairs.append((team, score))
+                    
+                    i = 0
+                    while i < len(parts):
+                        part = parts[i]
+                        
+                        seed_match = re.match(r"^(\d+)$", part)
+                        if seed_match and i + 2 < len(parts):
+                            potential_team = parts[i + 1]
+                            potential_score = parts[i + 2]
+                            team_match = re.match(r"^(\d+)?([A-Z]{2,6})$", potential_team)
+                            if team_match and len(team_match.group(2)) >= 2:
+                                if potential_score.isdigit():
+                                    teams_scores.append((team_match.group(2), potential_score))
+                                    i += 3
+                                    continue
+                        
+                        if part.isdigit() and i + 1 < len(parts):
+                            next_part = parts[i + 1]
+                            if re.match(r"^[A-Z]{2,6}$", next_part):
+                                teams_scores.append((next_part, part))
+                                i += 2
+                                continue
+                        
+                        match = re.match(r"^(\d+)?([A-Z]{2,6})$", part)
+                        if match and len(match.group(2)) >= 2:
+                            team_name = match.group(2)
+                            if not match.group(1):
+                                i += 1
+                                if i < len(parts) and parts[i].isdigit():
+                                    teams_scores.append((team_name, parts[i]))
+                                    i += 1
+                                    continue
+                        i += 1
                 
-                if len(game_pairs) >= 2:
-                    team1, score1 = game_pairs[0]
-                    team2, score2 = game_pairs[1]
+                if len(teams_scores) >= 2:
+                    team1, score1 = teams_scores[0]
+                    team2, score2 = teams_scores[1]
                     ot = "OT" in text or "SO" in text
                     games.append(((team1, score1), (team2, score2), ot))
                     print(f"    ADDED from ext-link: {team1} {score1} vs {team2} {score2}")
