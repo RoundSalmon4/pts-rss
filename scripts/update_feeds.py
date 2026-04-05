@@ -89,26 +89,30 @@ def extract_games(html, league=None):
         else:
             if "Final" in text or "FT" in text:
                 lines = [l.strip() for l in text.split("\n") if l.strip()]
-                teams = []
-                scores = []
+                game_pairs = []
+                
                 for line in lines:
                     if "Final" in line or "FT" in line:
                         continue
                     parts = line.replace("|", "").split()
+                    team = None
+                    score = None
                     for part in parts:
-                        if part.isdigit():
-                            if len(scores) < len(teams):
-                                scores.append(part)
-                        else:
+                        if part.isdigit() and score is None:
+                            score = part
+                        elif team is None:
                             match = re.match(r"^(\d+)?([A-Z]{2,6})$", part)
-                            if match:
-                                team_name = match.group(2)
-                                if len(team_name) >= 2:
-                                    teams.append(team_name)
-                if len(teams) >= 2 and len(scores) >= 2:
+                            if match and len(match.group(2)) >= 2:
+                                team = match.group(2)
+                    if team and score:
+                        game_pairs.append((team, score))
+                
+                if len(game_pairs) >= 2:
+                    team1, score1 = game_pairs[0]
+                    team2, score2 = game_pairs[1]
                     ot = "OT" in text or "SO" in text
-                    games.append(((teams[0], scores[0]), (teams[1], scores[1]), ot))
-                    print(f"    ADDED from ext-link: {teams[0]} {scores[0]} vs {teams[1]} {scores[1]}")
+                    games.append(((team1, score1), (team2, score2), ot))
+                    print(f"    ADDED from ext-link: {team1} {score1} vs {team2} {score2}")
     
     if not games:
         pre_tags = soup.find_all("pre")
