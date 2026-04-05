@@ -399,16 +399,24 @@ def main():
             
             for away, home, ot in games:
                 gid = f"{league}-{away[0]}-{home[0]}-{date_str}"
-                if gid in state["published"][league]:
-                    continue
                 suffix = " (OT)" if ot else ""
                 title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
-                state["published"][league][gid] = title
-                league_new.append((gid, title))
-                all_new.append((gid, f"{league.upper()}: {title}"))
-                for team in (away[0], home[0]):
-                    team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
-                    write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)], state)
+                
+                existing_title = state["published"][league].get(gid)
+                is_new_or_updated = False
+                
+                if existing_title is None:
+                    is_new_or_updated = True
+                elif existing_title != title:
+                    is_new_or_updated = True
+                
+                if is_new_or_updated:
+                    state["published"][league][gid] = title
+                    league_new.append((gid, title))
+                    all_new.append((gid, f"{league.upper()}: {title}"))
+                    for team in (away[0], home[0]):
+                        team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
+                        write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)], state)
 
         if league_new:
             write_feed(
