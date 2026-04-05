@@ -182,7 +182,11 @@
       "nhl-VGK-EDM-2026-04-05": "VGK 5 \u2013 EDM 1 (Final)",
       "nhl-CGY-ANA-2026-04-05": "CGY 5 \u2013 ANA 3 (Final)",
       "nhl-NSH-SJS-2026-04-05": "NSH 6 \u2013 SJS 3 (Final)",
-      "nhl-CHI-SEA-2026-04-05": "CHI 4 \u2013 SEA 2 (Final)"
+      "nhl-CHI-SEA-2026-04-05": "CHI 4 \u2013 SEA 2 (Final)",
+      "nhl-VGK-EDM-2026-04-04": "VGK 5 \u2013 EDM 1 (Final)",
+      "nhl-CGY-ANA-2026-04-04": "CGY 5 \u2013 ANA 3 (Final)",
+      "nhl-NSH-SJS-2026-04-04": "NSH 6 \u2013 SJS 3 (Final)",
+      "nhl-CHI-SEA-2026-04-04": "CHI 4 \u2013 SEA 2 (Final)"
     },
     "nfl": {},
     "wnba": {},
@@ -247,7 +251,10 @@
       "mls-LAFC-ORL-2026-04-05": "LAFC 6 \u2013 ORL 0 (Final)",
       "mls-VAN-POR-2026-04-05": "VAN 3 \u2013 POR 2 (Final)",
       "mls-SJE-SD-2026-04-05": "SJE 3 \u2013 SD 0 (Final)",
-      "mls-LAG-MIN-2026-04-05": "LAG 1 \u2013 MIN 2 (Final)"
+      "mls-LAG-MIN-2026-04-05": "LAG 1 \u2013 MIN 2 (Final)",
+      "mls-VAN-POR-2026-04-04": "VAN 3 \u2013 POR 2 (Final)",
+      "mls-SJE-SD-2026-04-04": "SJE 3 \u2013 SD 0 (Final)",
+      "mls-LAG-MIN-2026-04-04": "LAG 1 \u2013 MIN 2 (Final)"
     },
     "nwsl": {
       "nwsl-KC-NJ-2026-04-04": "KC 2 \u2013 NJ 1 (Final)",
