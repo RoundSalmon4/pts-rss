@@ -96,15 +96,15 @@ def extract_games(html, league=None):
                         continue
                     parts = line.replace("|", "").split()
                     for part in parts:
-                        if re.match(r"^\d+$", part):
+                        if part.isdigit():
                             if len(scores) < len(teams):
                                 scores.append(part)
                         else:
                             match = re.match(r"^(\d+)?([A-Z]{2,6})$", part)
                             if match:
-                                teams.append(match.group(2))
-                                if match.group(1) and len(scores) < len(teams) - 1:
-                                    scores.append(match.group(1))
+                                team_name = match.group(2)
+                                if len(team_name) >= 2:
+                                    teams.append(team_name)
                 if len(teams) >= 2 and len(scores) >= 2:
                     ot = "OT" in text or "SO" in text
                     games.append(((teams[0], scores[0]), (teams[1], scores[1]), ot))
@@ -156,28 +156,46 @@ def extract_games(html, league=None):
             rows = table.find_all("tr")
             for row in rows:
                 cells = row.find_all(["td", "th"])
-                if len(cells) >= 3:
+                if len(cells) >= 2:
                     cell_texts = [c.get_text(strip=True) for c in cells]
+                    full_text = " ".join(cell_texts)
                     
-                    score_values = []
-                    teams = []
-                    for text in cell_texts:
-                        if re.match(r"^\d+$", text):
-                            score_values.append(text)
-                        elif re.match(r"^[A-Z]{2,5}$", text):
-                            teams.append(text)
-                    
-                    if len(score_values) >= 2 and len(teams) >= 2:
-                        final_idx = None
-                        for i, text in enumerate(cell_texts):
-                            if "Final" in text or "final" in text or "FT" in text:
-                                final_idx = i
-                                break
+                    if "FT" in full_text or "Final" in full_text.lower():
+                        parts = full_text.replace("|", "").split()
                         
-                        if final_idx is not None or len(score_values) >= 2:
-                            ot = "OT" in "".join(cell_texts) or "SO" in "".join(cell_texts)
-                            games.append(((teams[0], score_values[0]), (teams[1], score_values[1]), ot))
-                            print(f"    ADDED from table: {teams[0]} {score_values[0]} vs {teams[1]} {score_values[1]}")
+                        team1 = None
+                        team2 = None
+                        score1 = None
+                        score2 = None
+                        
+                        for i, part in enumerate(parts):
+                            if " - FT - " in full_text:
+                                score_match = re.search(r"(\d+)\s*-\s*FT\s*-\s*(\d+)", full_text)
+                                if score_match:
+                                    score1 = score_match.group(1)
+                                    score2 = score_match.group(2)
+                                    
+                                    team_part = full_text.split(" - FT - ")[0].strip()
+                                    potential_teams = re.findall(r"([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s+([A-Z]{2,5})", team_part)
+                                    if len(potential_teams) >= 2:
+                                        team1 = potential_teams[0][1]
+                                        team2 = potential_teams[1][1]
+                                break
+                            elif re.match(r"^\d+$", part) and len(part) <= 3:
+                                if score1 is None:
+                                    score1 = part
+                                elif score2 is None:
+                                    score2 = part
+                            elif len(part) >= 3 and part[0].isupper():
+                                if team1 is None:
+                                    team1 = part
+                                elif team2 is None:
+                                    team2 = part
+                        
+                        if (team1 and team2 and score1 and score2):
+                            ot = "OT" in full_text or "SO" in full_text
+                            games.append(((team1, score1), (team2, score2), ot))
+                            print(f"    ADDED from table: {team1} {score1} vs {team2} {score2}")
     
     print(f"Extracted {len(games)} games")
     return games
