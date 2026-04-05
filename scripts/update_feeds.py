@@ -70,24 +70,51 @@ def fetch(url):
 def extract_games(html):
     soup = BeautifulSoup(html, "html.parser")
     games = []
+    
     links = soup.find_all("a", href=True)
     print(f"Found {len(links)} total links")
     for game in links:
         href = game.get("href", "")
         if "/20" not in href:
-            print(f"  SKIP link (no /20): {href}")
             continue
-        print(f"  GAME LINK: {href}")
         text = game.get_text()
-        print(f"    text: {repr(text[:200])}")
         if "Final" not in text:
-            print(f"    NO 'Final' - skipping")
             continue
         team_scores = re.findall(r"([A-Z]{2,3})\s+(\d+)", text)
         if len(team_scores) == 2:
             ot = "OT" in text
             games.append(((team_scores[0][0], team_scores[0][1]), (team_scores[1][0], team_scores[1][1]), ot))
-            print(f"    ADDED: {team_scores}")
+            print(f"    ADDED from link: {team_scores}")
+    
+    if not games:
+        tables = soup.find_all("table")
+        for table in tables:
+            rows = table.find_all("tr")
+            for row in rows:
+                cells = row.find_all(["td", "th"])
+                if len(cells) >= 3:
+                    cell_texts = [c.get_text(strip=True) for c in cells]
+                    
+                    score_values = []
+                    teams = []
+                    for text in cell_texts:
+                        if re.match(r"^\d+$", text):
+                            score_values.append(text)
+                        elif re.match(r"^[A-Z]{2,5}$", text):
+                            teams.append(text)
+                    
+                    if len(score_values) >= 2 and len(teams) >= 2:
+                        final_idx = None
+                        for i, text in enumerate(cell_texts):
+                            if "Final" in text or "final" in text:
+                                final_idx = i
+                                break
+                        
+                        if final_idx is not None or len(score_values) >= 2:
+                            ot = "OT" in "".join(cell_texts)
+                            games.append(((teams[0], score_values[0]), (teams[1], score_values[1]), ot))
+                            print(f"    ADDED from table: {teams[0]} {score_values[0]} vs {teams[1]} {score_values[1]}")
+    
     print(f"Extracted {len(games)} games")
     return games
 
