@@ -650,12 +650,6 @@ def main():
                         existing_title = state["published"][league][check_gid]
                         if existing_title == title:
                             break
-                for check_date in [today, yesterday]:
-                    check_gid = f"{base_gid}-{check_date}"
-                    if check_gid in state["published"].get(league, {}):
-                        existing_title = state["published"][league][check_gid]
-                        if existing_title == title:
-                            break
                 else:
                     gid = f"{base_gid}-{date_str}"
                     state["published"][league][gid] = title
