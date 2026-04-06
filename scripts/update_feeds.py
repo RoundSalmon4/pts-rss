@@ -108,6 +108,11 @@ def validate_state(state):
     if "published" not in state:
         state["published"] = {}
     
+    now = datetime.now(TIMEZONE)
+    today = now.strftime("%Y-%m-%d")
+    yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    valid_dates = {today, yesterday}
+    
     for league, games in list(state.get("published", {}).items()):
         if not isinstance(games, dict):
             state["published"][league] = {}
@@ -122,6 +127,10 @@ def validate_state(state):
             
             league_key, team1, team2, date = match.groups()
             
+            if date not in valid_dates:
+                keys_to_remove.add(gid)
+                continue
+            
             base_key = f"{league_key}-{min(team1, team2)}-{max(team1, team2)}-{date}"
             if base_key != gid:
                 keys_to_remove.add(gid)
@@ -135,12 +144,27 @@ def load_state():
     if not STATE_FILE.exists():
         return {"published": {}}
     data = json.loads(STATE_FILE.read_text())
+    
+    now = datetime.now(TIMEZONE)
+    today = now.strftime("%Y-%m-%d")
+    yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    valid_dates = {today, yesterday}
+    
     for league, items in data.get("published", {}).items():
         if isinstance(items, list):
             new_dict = {}
             for item in items:
                 new_dict[item] = ""
             data["published"][league] = new_dict
+    
+    for league, games in list(data.get("published", {}).items()):
+        keys_to_remove = set()
+        for gid in games.keys():
+            match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
+            if match and match.group(4) not in valid_dates:
+                keys_to_remove.add(gid)
+        for gid in keys_to_remove:
+            del games[gid]
     
     seen_gids = {}
     for league, games in list(data.get("published", {}).items()):
@@ -458,12 +482,25 @@ def write_feed_from_state(path, title, link, description, league, state, leagues
     SubElement(channel, "link").text = link
     SubElement(channel, "description").text = description
 
+    now = datetime.now(TIMEZONE)
+    today = now.strftime("%Y-%m-%d")
+    yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    valid_dates = {today, yesterday}
+
     if league == "all":
         published = {}
         for league_guids in state.get("published", {}).values():
-            published.update(league_guids)
+            for gid, title_text in league_guids.items():
+                match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
+                if match and match.group(4) in valid_dates:
+                    published[gid] = title_text
     else:
-        published = state.get("published", {}).get(league, {})
+        published = {}
+        league_games = state.get("published", {}).get(league, {})
+        for gid, title_text in league_games.items():
+            match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
+            if match and match.group(4) in valid_dates:
+                published[gid] = title_text
 
     existing_guids = set()
     if path.exists():
