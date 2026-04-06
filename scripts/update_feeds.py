@@ -207,6 +207,8 @@ def extract_games(html, league=None):
     use_team_codes = MLS_TEAM_CODES if league in ["mls", "nwsl"] else None
     
     is_ncaa = league in ["ncaamb", "ncaawb"]
+    is_uefa = league in ["champions-league", "europa-league", "premier-league"]
+    
     team_code_pattern = r"([A-Z]{2,6})\s+(\d+)" if is_ncaa else r"([A-Z]{2,3})\s+(\d+)"
     
     links = soup.find_all("a", href=True)
@@ -219,10 +221,28 @@ def extract_games(html, league=None):
         if "/20" in href:
             if "Final" not in text and "FT" not in text:
                 continue
-            team_scores = re.findall(team_code_pattern, text)
+            
+            if is_ncaa:
+                team_scores = re.findall(r"(\d*\s*[A-Z][A-Z\s]{1,5})\s+(\d+)", text)
+            elif is_uefa:
+                team_scores = re.findall(r"(\d*\s*[A-Za-z\s]{3,20})\s+(\d+)", text)
+            else:
+                team_scores = re.findall(team_code_pattern, text)
+            
             if len(team_scores) == 2:
+                team1 = team_scores[0][0].strip()
+                score1 = team_scores[0][1]
+                team2 = team_scores[1][0].strip()
+                score2 = team_scores[1][1]
+                
+                if is_ncaa or is_uefa:
+                    team1 = re.sub(r"^\d+\s*", "", team1)
+                    team2 = re.sub(r"^\d+\s*", "", team2)
+                    team1 = team1.replace(" ", "")
+                    team2 = team2.replace(" ", "")
+                
                 ot = "OT" in text or "SO" in text
-                games.append(((team_scores[0][0], team_scores[0][1]), (team_scores[1][0], team_scores[1][1]), ot))
+                games.append(((team1, score1), (team2, score2), ot))
                 print(f"    ADDED from link: {team_scores}")
         else:
             if "Final" in text or "FT" in text:
@@ -620,19 +640,24 @@ def main():
                 home_code = home[0]
                 if away_code > home_code:
                     away_code, home_code = home_code, away_code
-                gid = f"{league}-{away_code}-{home_code}-{date_str}"
+                base_gid = f"{league}-{away_code}-{home_code}"
                 suffix = " (OT)" if ot else ""
                 title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
                 
-                existing_title = state["published"][league].get(gid)
-                is_new_or_updated = False
-                
-                if existing_title is None:
-                    is_new_or_updated = True
-                elif existing_title != title:
-                    is_new_or_updated = True
-                
-                if is_new_or_updated:
+                for check_date in [today, yesterday]:
+                    check_gid = f"{base_gid}-{check_date}"
+                    if check_gid in state["published"].get(league, {}):
+                        existing_title = state["published"][league][check_gid]
+                        if existing_title == title:
+                            break
+                for check_date in [today, yesterday]:
+                    check_gid = f"{base_gid}-{check_date}"
+                    if check_gid in state["published"].get(league, {}):
+                        existing_title = state["published"][league][check_gid]
+                        if existing_title == title:
+                            break
+                else:
+                    gid = f"{base_gid}-{date_str}"
                     state["published"][league][gid] = title
                     league_new.append((gid, title))
                     all_new.append((gid, f"{league.upper()}: {title}"))
