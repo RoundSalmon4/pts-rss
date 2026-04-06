@@ -56,7 +56,8 @@
       "nba-ORL-NOP-2026-04-05": "ORL 112 \u2013 NOP 108 (Final)",
       "nba-CHA-MIN-2026-04-05": "CHA 122 \u2013 MIN 108 (Final)",
       "nba-LAL-DAL-2026-04-05": "LAL 128 \u2013 DAL 134 (Final)",
-      "nba-LAC-SAC-2026-04-05": "LAC 138 \u2013 SAC 109 (Final)"
+      "nba-LAC-SAC-2026-04-05": "LAC 138 \u2013 SAC 109 (Final)",
+      "nba-HOU-GSW-2026-04-05": "HOU 117 \u2013 GSW 116 (Final)"
     },
     "mlb": {
       "mlb-MIN-KC-2026-04-02": "MIN 5 \u2013 KC 1 (Final)",
@@ -202,7 +203,8 @@
       "nhl-BOS-PHI-2026-04-05": "BOS 1 \u2013 PHI 2 (Final) (OT)",
       "nhl-CAR-OTT-2026-04-05": "CAR 3 \u2013 OTT 6 (Final) (OT)",
       "nhl-NJD-MTL-2026-04-05": "NJD 3 \u2013 MTL 0 (Final)",
-      "nhl-WSH-NYR-2026-04-05": "WSH 1 \u2013 NYR 8 (Final)"
+      "nhl-WSH-NYR-2026-04-05": "WSH 1 \u2013 NYR 8 (Final)",
+      "nhl-STL-COL-2026-04-05": "STL 3 \u2013 COL 2 (Final)"
     },
     "nfl": {},
     "wnba": {},
