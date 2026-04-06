@@ -119,6 +119,7 @@ def validate_state(state):
             continue
         
         keys_to_remove = set()
+        seen_gids = {}
         for gid, title in games.items():
             match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
             if not match:
@@ -131,8 +132,10 @@ def validate_state(state):
                 keys_to_remove.add(gid)
                 continue
             
-            base_key = f"{league_key}-{min(team1, team2)}-{max(team1, team2)}-{date}"
-            if base_key != gid:
+            base_key_no_date = f"{league_key}-{min(team1, team2)}-{max(team1, team2)}"
+            if base_key_no_date not in seen_gids:
+                seen_gids[base_key_no_date] = gid
+            elif seen_gids[base_key_no_date] != gid:
                 keys_to_remove.add(gid)
         
         for key in keys_to_remove:
@@ -173,17 +176,17 @@ def load_state():
             match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
             if match:
                 league_key, team1, team2, date = match.groups()
-                base_gid = f"{league_key}-{min(team1, team2)}-{max(team1, team2)}-{date}"
+                base_gid_no_date = f"{league_key}-{min(team1, team2)}-{max(team1, team2)}"
                 
-                if base_gid in seen_gids:
-                    existing_gid, existing_title = seen_gids[base_gid]
-                    if existing_title == existing_gid and title != gid:
+                if base_gid_no_date in seen_gids:
+                    existing_gid, existing_title = seen_gids[base_gid_no_date]
+                    if existing_title == existing_gid and title != gid and title != existing_title:
                         to_remove.add(existing_gid)
-                        seen_gids[base_gid] = (gid, title)
-                    elif title != gid:
+                        seen_gids[base_gid_no_date] = (gid, title)
+                    elif title != gid and title != existing_title:
                         to_remove.add(gid)
                 else:
-                    seen_gids[base_gid] = (gid, title)
+                    seen_gids[base_gid_no_date] = (gid, title)
         
         for gid in to_remove:
             if gid in games:
