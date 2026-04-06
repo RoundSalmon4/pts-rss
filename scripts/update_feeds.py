@@ -631,6 +631,8 @@ def main():
             except Exception as e:
                 print(f"Error fetching: {e}")
 
+    seen_base_gids_this_run = set()
+    
     for league, url in leagues.items():
         state["published"].setdefault(league, {})
         league_new = []
@@ -647,13 +649,18 @@ def main():
                 suffix = " (OT)" if ot else ""
                 title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
                 
+                if base_gid in seen_base_gids_this_run:
+                    continue
+                
                 for check_date in [today, yesterday]:
                     check_gid = f"{base_gid}-{check_date}"
                     if check_gid in state["published"].get(league, {}):
                         existing_title = state["published"][league][check_gid]
                         if existing_title == title:
+                            seen_base_gids_this_run.add(base_gid)
                             break
                 else:
+                    seen_base_gids_this_run.add(base_gid)
                     gid = f"{base_gid}-{date_str}"
                     state["published"][league][gid] = title
                     league_new.append((gid, title))
