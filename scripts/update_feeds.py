@@ -104,6 +104,33 @@ HEADERS = {"User-Agent": "plaintextsports-rss/3.0"}
 RSS_DIR.mkdir(exist_ok=True)
 TEAM_DIR.mkdir(parents=True, exist_ok=True)
 
+def validate_state(state):
+    if "published" not in state:
+        state["published"] = {}
+    
+    for league, games in list(state.get("published", {}).items()):
+        if not isinstance(games, dict):
+            state["published"][league] = {}
+            continue
+        
+        keys_to_remove = set()
+        for gid, title in games.items():
+            match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
+            if not match:
+                keys_to_remove.add(gid)
+                continue
+            
+            league_key, team1, team2, date = match.groups()
+            
+            base_key = f"{league_key}-{min(team1, team2)}-{max(team1, team2)}-{date}"
+            if base_key != gid:
+                keys_to_remove.add(gid)
+        
+        for key in keys_to_remove:
+            del games[key]
+    
+    return state
+
 def load_state():
     if not STATE_FILE.exists():
         return {"published": {}}
@@ -114,6 +141,30 @@ def load_state():
             for item in items:
                 new_dict[item] = ""
             data["published"][league] = new_dict
+    
+    seen_gids = {}
+    for league, games in list(data.get("published", {}).items()):
+        to_remove = set()
+        for gid, title in games.items():
+            match = re.match(r"([a-z]+)-([A-Z]+)-([A-Z]+)-(\d{4}-\d{2}-\d{2})", gid)
+            if match:
+                league_key, team1, team2, date = match.groups()
+                base_gid = f"{league_key}-{min(team1, team2)}-{max(team1, team2)}-{date}"
+                
+                if base_gid in seen_gids:
+                    existing_gid, existing_title = seen_gids[base_gid]
+                    if existing_title == existing_gid and title != gid:
+                        to_remove.add(existing_gid)
+                        seen_gids[base_gid] = (gid, title)
+                    elif title != gid:
+                        to_remove.add(gid)
+                else:
+                    seen_gids[base_gid] = (gid, title)
+        
+        for gid in to_remove:
+            if gid in games:
+                del games[gid]
+    
     return data
 
 def save_state(state):
@@ -131,6 +182,9 @@ def extract_games(html, league=None):
     
     use_team_codes = MLS_TEAM_CODES if league in ["mls", "nwsl"] else None
     
+    is_ncaa = league in ["ncaamb", "ncaawb"]
+    team_code_pattern = r"([A-Z]{2,6})\s+(\d+)" if is_ncaa else r"([A-Z]{2,3})\s+(\d+)"
+    
     links = soup.find_all("a", href=True)
     print(f"Found {len(links)} total links")
     for game in links:
@@ -141,7 +195,7 @@ def extract_games(html, league=None):
         if "/20" in href:
             if "Final" not in text and "FT" not in text:
                 continue
-            team_scores = re.findall(r"([A-Z]{2,3})\s+(\d+)", text)
+            team_scores = re.findall(team_code_pattern, text)
             if len(team_scores) == 2:
                 ot = "OT" in text or "SO" in text
                 games.append(((team_scores[0][0], team_scores[0][1]), (team_scores[1][0], team_scores[1][1]), ot))
@@ -477,9 +531,7 @@ def main():
     now = datetime.now(TIMEZONE)
     today = now.strftime("%Y-%m-%d")
     yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-    two_days_ago = (now - timedelta(days=2)).strftime("%Y-%m-%d")
-    three_days_ago = (now - timedelta(days=3)).strftime("%Y-%m-%d")
-    print(f"Today: {today}, Yesterday: {yesterday}, 2 days ago: {two_days_ago}, 3 days ago: {three_days_ago}")
+    print(f"Today: {today}, Yesterday: {yesterday}")
 
     leagues = discover_leagues()
     print(f"Leagues: {leagues}")
@@ -508,7 +560,7 @@ def main():
 
     fetch_tasks = []
     for league, url in leagues.items():
-        for date_str in [today, yesterday, two_days_ago, three_days_ago]:
+        for date_str in [today, yesterday]:
             fetch_tasks.append((league, url, date_str))
 
     with ThreadPoolExecutor(max_workers=10) as executor:
@@ -523,11 +575,15 @@ def main():
         state["published"].setdefault(league, {})
         league_new = []
 
-        for date_str in [today, yesterday, two_days_ago, three_days_ago]:
+        for date_str in [today, yesterday]:
             games = games_cache.get((league, date_str), [])
             
             for away, home, ot in games:
-                gid = f"{league}-{away[0]}-{home[0]}-{date_str}"
+                away_code = away[0]
+                home_code = home[0]
+                if away_code > home_code:
+                    away_code, home_code = home_code, away_code
+                gid = f"{league}-{away_code}-{home_code}-{date_str}"
                 suffix = " (OT)" if ot else ""
                 title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
                 
@@ -589,6 +645,9 @@ def main():
             new_items_only=True
         )
 
+    save_state(state)
+    
+    state = validate_state(state)
     save_state(state)
 
 if __name__ == "__main__":
