@@ -42,7 +42,9 @@
       "mlb-BOS-MIL-2026-04-06": "MIL 8 \u2013 BOS 6 (Final)",
       "mlb-LAD-TOR-2026-04-06": "LAD 14 \u2013 TOR 2 (Final)",
       "mlb-BAL-CWS-2026-04-06": "BAL 2 \u2013 CWS 1 (Final)",
-      "mlb-DET-MIN-2026-04-06": "DET 3 \u2013 MIN 7 (Final)"
+      "mlb-DET-MIN-2026-04-06": "DET 3 \u2013 MIN 7 (Final)",
+      "mlb-SEA-TEX-2026-04-06": "SEA 1 \u2013 TEX 2 (Final)",
+      "mlb-COL-HOU-2026-04-06": "HOU 7 \u2013 COL 9 (Final)"
     },
     "nhl": {
       "nhl-DET-NYR-2026-04-05": "DET 1 \u2013 NYR 4 (Final)",
@@ -69,7 +71,8 @@
       "ncaamb-ARIZ-MICH-2026-04-05": "ARIZ 73 \u2013 MICH 91 (Final)",
       "ncaamb-OKLA-WVU-2026-04-05": "OKLA 82 \u2013 WVU 89 (Final)",
       "ncaamb-ILL-UCONN-2026-04-06": "UCONN 71 \u2013 ILL 62 (Final)",
-      "ncaamb-AUBURN-TULSA-2026-04-05": "TULSA 86 \u2013 AUBURN 92 (Final)"
+      "ncaamb-AUBURN-TULSA-2026-04-05": "TULSA 86 \u2013 AUBURN 92 (Final)",
+      "ncaamb-MICH-UCONN-2026-04-06": "MICH 69 \u2013 UCONN 63 (Final)"
     },
     "ncaawb": {
       "ncaawb-CAR-UCLA-2026-04-06": "UCLA 79 \u2013 CAR 51 (Final)"
