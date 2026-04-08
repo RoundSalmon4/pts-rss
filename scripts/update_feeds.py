@@ -385,13 +385,20 @@ def extract_games(html, league=None):
                     
                     teams_found = []
                     team_codes = MLS_TEAM_CODES if league == "mls" else (NWSL_TEAM_CODES if league == "nwsl" else {})
+                    
                     for a in div.find_all("a", href=True):
                         href = a.get("href", "")
-                        if "/teams/" in href:
+                        if "/teams/" in href or "/clubs/" in href:
                             url_part = href.split("/")[-1]
                             team_code = team_codes.get(url_part, url_part.split("-")[0].upper()[:3])
                             if team_code and len(team_code) >= 2:
                                 teams_found.append(team_code)
+                    
+                    if len(teams_found) < 2:
+                        parts = div_id.split("-")
+                        for part in parts:
+                            if len(part) >= 2 and len(part) <= 4:
+                                teams_found.append(part.upper())
                     
                     if len(teams_found) >= 2:
                         ot = "OT" in text or "SO" in text
@@ -652,22 +659,18 @@ def main():
                 if base_gid in seen_base_gids_this_run:
                     continue
                 
-                for check_date in [today, yesterday]:
-                    check_gid = f"{base_gid}-{check_date}"
-                    if check_gid in state["published"].get(league, {}):
-                        existing_title = state["published"][league][check_gid]
-                        if existing_title == title:
-                            seen_base_gids_this_run.add(base_gid)
-                            break
-                else:
+                if base_gid in state["published"].get(league, {}):
                     seen_base_gids_this_run.add(base_gid)
-                    gid = f"{base_gid}-{date_str}"
-                    state["published"][league][gid] = title
-                    league_new.append((gid, title))
-                    all_new.append((gid, f"{league.upper()}: {title}"))
-                    for team in (away[0], home[0]):
-                        team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
-                        write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)], state)
+                    continue
+                
+                seen_base_gids_this_run.add(base_gid)
+                gid = f"{base_gid}-{date_str}"
+                state["published"][league][gid] = title
+                league_new.append((gid, title))
+                all_new.append((gid, f"{league.upper()}: {title}"))
+                for team in (away[0], home[0]):
+                    team_path = TEAM_DIR / f"{league}-{team.lower()}.xml"
+                    write_feed(team_path, f"{league.upper()} – {team} Finals", url, f"Final games for {team}", [(gid, title)], state)
 
         if league_new:
             write_feed(
