@@ -386,13 +386,26 @@ def extract_games(html, league=None):
                     teams_found = []
                     team_codes = MLS_TEAM_CODES if league == "mls" else (NWSL_TEAM_CODES if league == "nwsl" else {})
                     
-                    for a in div.find_all("a", href=True):
-                        href = a.get("href", "")
-                        if "/teams/" in href or "/clubs/" in href:
-                            url_part = href.split("/")[-1]
-                            team_code = team_codes.get(url_part, url_part.split("-")[0].upper()[:3])
-                            if team_code and len(team_code) >= 2:
-                                teams_found.append(team_code)
+                    # First try to get teams from <b> tags in the div (preserves home/away order)
+                    bolds = div.find_all("b")
+                    for b in bolds:
+                        name = b.get_text(strip=True)
+                        if name and len(name) >= 2 and name.lower() not in ['1st leg', '2nd leg', 'leg']:
+                            # Take last word for team name (e.g., 'Real Betis' -> 'Betis')
+                            words = name.split()
+                            code = (words[-1] if len(words) > 1 else name)[:3].upper()
+                            teams_found.append(code)
+                    
+                    # If no teams from <b> tags, fall back to div_id or links
+                    if len(teams_found) < 2:
+                        teams_found = []
+                        for a in div.find_all("a", href=True):
+                            href = a.get("href", "")
+                            if "/teams/" in href or "/clubs/" in href:
+                                url_part = href.split("/")[-1]
+                                team_code = team_codes.get(url_part, url_part.split("-")[0].upper()[:3])
+                                if team_code and len(team_code) >= 2:
+                                    teams_found.append(team_code)
                     
                     if len(teams_found) < 2:
                         parts = div_id.split("-")
@@ -650,8 +663,16 @@ def main():
             for away, home, ot in games:
                 away_code = away[0]
                 home_code = home[0]
+                
+                is_uefa = league in ["champions-league", "europa-league", "premier-league"]
+                if is_uefa:
+                    away_code, home_code = home_code, away_code
+                    away, home = home, away
+                
                 if away_code > home_code:
                     away_code, home_code = home_code, away_code
+                    away, home = home, away
+                
                 base_gid = f"{league}-{away_code}-{home_code}"
                 suffix = " (OT)" if ot else ""
                 title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
