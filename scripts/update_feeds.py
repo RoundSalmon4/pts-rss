@@ -391,14 +391,18 @@ def extract_games(html, league=None):
                     for b in bolds:
                         name = b.get_text(strip=True)
                         if name and len(name) >= 2 and name.lower() not in ['1st leg', '2nd leg', 'leg']:
-                            # Take last word for team name (e.g., 'Real Betis' -> 'Betis')
+                            # Handle team names with special patterns
                             words = name.split()
-                            code = (words[-1] if len(words) > 1 else name)[:3].upper()
+                            if len(words) == 2 and len(words[1]) <= 3:
+                                # e.g., "Sporting CP" -> take first word for code
+                                code = words[0][:3].upper()
+                            else:
+                                # Take last word for team name (e.g., 'Real Betis' -> 'Betis')
+                                code = (words[-1] if len(words) > 1 else name)[:3].upper()
                             teams_found.append(code)
                     
                     # If no teams from <b> tags, fall back to div_id or links
                     if len(teams_found) < 2:
-                        teams_found = []
                         for a in div.find_all("a", href=True):
                             href = a.get("href", "")
                             if "/teams/" in href or "/clubs/" in href:
@@ -663,11 +667,6 @@ def main():
             for away, home, ot in games:
                 away_code = away[0]
                 home_code = home[0]
-                
-                is_uefa = league in ["champions-league", "europa-league", "premier-league"]
-                if is_uefa:
-                    away_code, home_code = home_code, away_code
-                    away, home = home, away
                 
                 if away_code > home_code:
                     away_code, home_code = home_code, away_code
