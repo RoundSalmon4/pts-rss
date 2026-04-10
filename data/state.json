@@ -14,7 +14,8 @@
       "nba-MIA-TOR-2026-04-09": "MIA 114 \u2013 TOR 128 (Final)",
       "nba-BKN-IND-2026-04-09": "BKN 94 \u2013 IND 123 (Final)",
       "nba-BOS-NYK-2026-04-09": "BOS 106 \u2013 NYK 112 (Final)",
-      "nba-HOU-PHI-2026-04-09": "HOU 113 \u2013 PHI 102 (Final)"
+      "nba-HOU-PHI-2026-04-09": "HOU 113 \u2013 PHI 102 (Final)",
+      "nba-GSW-LAL-2026-04-09": "GSW 103 \u2013 LAL 119 (Final)"
     },
     "mlb": {
       "mlb-CLE-KC-2026-04-08": "CLE 10 \u2013 KC 2 (Final)",
@@ -46,7 +47,10 @@
       "nhl-DET-PHI-2026-04-09": "DET 6 \u2013 PHI 3 (Final)",
       "nhl-STL-WPG-2026-04-09": "STL 2 \u2013 WPG 3 (Final)",
       "nhl-CAR-CHI-2026-04-09": "CAR 7 \u2013 CHI 2 (Final)",
-      "nhl-CGY-COL-2026-04-09": "CGY 1 \u2013 COL 3 (Final)"
+      "nhl-CGY-COL-2026-04-09": "CGY 1 \u2013 COL 3 (Final)",
+      "nhl-DAL-MIN-2026-04-09": "DAL 5 \u2013 MIN 4 (Final)",
+      "nhl-NSH-UTA-2026-04-09": "NSH 1 \u2013 UTA 4 (Final)",
+      "nhl-ANA-SJS-2026-04-09": "ANA 6 \u2013 SJS 1 (Final)"
     },
     "nfl": {},
     "wnba": {},
