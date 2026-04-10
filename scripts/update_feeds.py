@@ -664,7 +664,7 @@ def main():
         for date_str in [today, yesterday]:
             games = games_cache.get((league, date_str), [])
             
-            HOME_FIRST_LEAGUES = {"nba", "nhl", "mlb", "nfl", "wnba"}
+            HOME_FIRST_LEAGUES = {"nba", "nhl", "mlb", "nfl", "wnba", "premier-league", "champions-league", "europa-league", "mls", "nwsl"}
             
             for away, home, ot in games:
                 away_code = away[0]
