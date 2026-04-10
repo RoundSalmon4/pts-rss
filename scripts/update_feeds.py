@@ -727,14 +727,16 @@ def main():
                     away_code_actual, home_code_actual = actual_away[0], actual_away[1]
                     suffix = " (OT)" if ot else ""
                     title = f"{away_code_actual} {away[1]} – {home_code_actual} {home[1]} (Final){suffix}"
-                    away_code = away_code_actual if away_code_actual < home_code_actual else home_code_actual
-                    home_code = home_code_actual if away_code_actual < home_code_actual else away_code_actual
+                    away_code = away_code_actual
+                    home_code = home_code_actual
                 else:
                     if away_code > home_code:
                         away_code, home_code = home_code, away_code
                         away, home = home, away
                     suffix = " (OT)" if ot else ""
                     title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
+                
+                base_gid = f"{league}-{away_code}-{home_code}"
                 
                 if base_gid in seen_base_gids_this_run:
                     continue
