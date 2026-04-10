@@ -44,3 +44,5 @@ The script auto-discovers available sports. Current sports include:
 - OT games are marked `(OT)` in the title
 - pubDate is UTC (RSS-safe)
 - Updated automatically by GitHub Actions every 30 minutes
+- All scores follow the **away – home** format (the visiting team is listed first)
+- Note: PlainTextSports.com may list scores as home team first in some cases. The feeds attempt to normalize these to the away – home format when possible.
