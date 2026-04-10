@@ -522,6 +522,60 @@ def write_feed(path, title, link, description, new_items, state=None):
 
 SCORE_CACHE = {}
 
+def get_espn_home_away(team1, team2, league, date_str):
+    sport_map = {
+        "nba": "basketball/nba",
+        "nhl": "hockey/nhl",
+        "mlb": "baseball/mlb",
+        "nfl": "football/nfl",
+        "wnba": "basketball/wnba",
+        "ncaamb": "basketball/mens-college-basketball",
+        "ncaawb": "basketball/womens-college-basketball",
+    }
+    espn_sport = sport_map.get(league)
+    if not espn_sport:
+        return None
+    
+    try:
+        url = f"https://site.api.espn.com/apis/v1/schedule?sport={espn_sport}&league={league}&dates={date_str.replace('-', '')}"
+        resp = requests.get(url, headers=HEADERS, timeout=10)
+        data = resp.json()
+        
+        for event in data.get("events", []):
+            comp = event.get("competitions", [{}])[0]
+            competitors = comp.get("competitors", [])
+            
+            for c in competitors:
+                if c.get("homeAway") == "home":
+                    home_team = c.get("team", {}).get("abbreviation", "")
+                elif c.get("homeAway") == "away":
+                    away_team = c.get("team", {}).get("abbreviation", "")
+            
+            found_home = None
+            found_away = None
+            for c in competitors:
+                team_abbrev = c.get("team", {}).get("abbreviation", "")
+                if team_abbrev == team1:
+                    if c.get("homeAway") == "home":
+                        found_home = team1
+                        found_away = team2
+                    elif c.get("homeAway") == "away":
+                        found_away = team1
+                        found_home = team2
+                elif team_abbrev == team2:
+                    if c.get("homeAway") == "home":
+                        found_home = team2
+                        found_away = team1
+                    elif c.get("homeAway") == "away":
+                        found_away = team2
+                        found_home = team1
+            
+            if found_home and found_away:
+                return (found_away, found_home)
+    except Exception as e:
+        print(f"  ESPN lookup error: {e}")
+    return None
+
 def write_feed_from_state(path, title, link, description, league, state, leagues=None, new_items_only=False):
     rss = Element("rss", version="2.0")
     channel = SubElement(rss, "channel")
@@ -668,13 +722,19 @@ def main():
                 away_code = away[0]
                 home_code = home[0]
                 
-                if away_code > home_code:
-                    away_code, home_code = home_code, away_code
-                    away, home = home, away
-                
-                base_gid = f"{league}-{away_code}-{home_code}"
-                suffix = " (OT)" if ot else ""
-                title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
+                actual_away = get_espn_home_away(away_code, home_code, league, date_str)
+                if actual_away:
+                    away_code_actual, home_code_actual = actual_away[0], actual_away[1]
+                    suffix = " (OT)" if ot else ""
+                    title = f"{away_code_actual} {away[1]} – {home_code_actual} {home[1]} (Final){suffix}"
+                    away_code = away_code_actual if away_code_actual < home_code_actual else home_code_actual
+                    home_code = home_code_actual if away_code_actual < home_code_actual else away_code_actual
+                else:
+                    if away_code > home_code:
+                        away_code, home_code = home_code, away_code
+                        away, home = home, away
+                    suffix = " (OT)" if ot else ""
+                    title = f"{away[0]} {away[1]} – {home[0]} {home[1]} (Final){suffix}"
                 
                 if base_gid in seen_base_gids_this_run:
                     continue
