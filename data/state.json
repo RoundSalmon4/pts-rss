@@ -55,7 +55,9 @@
     "premier-league": {},
     "world-cup": {},
     "mls": {
-      "mls-CIN-TOR-2026-04-11": "CIN 1 \u2013 TOR 1 (Final)"
+      "mls-CIN-TOR-2026-04-11": "CIN 1 \u2013 TOR 1 (Final)",
+      "mls-MTL-PHI-2026-04-11": "MTL 1 \u2013 PHI 2 (Final)",
+      "mls-ATX-LAG-2026-04-11": "ATX 1 \u2013 LAG 2 (Final)"
     },
     "nwsl": {}
   }
