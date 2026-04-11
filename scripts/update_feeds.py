@@ -522,6 +522,59 @@ def write_feed(path, title, link, description, new_items, state=None):
 
 SCORE_CACHE = {}
 
+HOME_AWAY_CACHE = {}
+
+def get_home_away(team1, team2, league, date_str):
+    cache_key = f"{league}-{date_str}-{team1}-{team2}"
+    if cache_key in HOME_AWAY_CACHE:
+        return HOME_AWAY_CACHE[cache_key]
+    
+    league_sport_map = {
+        "nba": ("basketball", "nba"),
+        "nhl": ("hockey", "nhl"),
+        "mlb": ("baseball", "mlb"),
+        "wnba": ("basketball", "wnba"),
+        "ncaamb": ("basketball", "mens-college-basketball"),
+        "ncaawb": ("basketball", "womens-college-basketball"),
+    }
+    
+    if league not in league_sport_map:
+        return None
+    
+    sport, league_id = league_sport_map[league]
+    
+    try:
+        url = f"https://site.api.espn.com/apis/v1/schedule?sport={sport}&league={league_id}&dates={date_str.replace('-', '')}"
+        resp = requests.get(url, headers=HEADERS, timeout=10)
+        data = resp.json()
+        
+        for event in data.get("events", []):
+            competitors = event.get("competitions", [{}])[0].get("competitors", [])
+            
+            if len(competitors) < 2:
+                continue
+            
+            team_map = {}
+            for c in competitors:
+                team_abbrev = c.get("team", {}).get("abbreviation", "")
+                team_map[team_abbrev] = c.get("homeAway", "")
+            
+            if team1 in team_map and team2 in team_map:
+                if team_map[team1] == "away" and team_map[team2] == "home":
+                    result = (team1, team2)
+                elif team_map[team1] == "home" and team_map[team2] == "away":
+                    result = (team2, team1)
+                else:
+                    result = None
+                
+                HOME_AWAY_CACHE[cache_key] = result
+                return result
+    except:
+        pass
+    
+    HOME_AWAY_CACHE[cache_key] = None
+    return None
+
 def write_feed_from_state(path, title, link, description, league, state, leagues=None, new_items_only=False):
     rss = Element("rss", version="2.0")
     channel = SubElement(rss, "channel")
@@ -664,13 +717,15 @@ def main():
         for date_str in [today, yesterday]:
             games = games_cache.get((league, date_str), [])
             
-            HOME_FIRST_LEAGUES = {"nba", "nhl", "mlb", "nfl", "wnba", "premier-league", "champions-league", "europa-league", "mls", "nwsl"}
-            
             for away, home, ot in games:
                 away_code = away[0]
                 home_code = home[0]
                 
-                if league in HOME_FIRST_LEAGUES:
+                actual = get_home_away(away_code, home_code, league, date_str)
+                if actual:
+                    away_code, home_code = actual
+                    away, home = (actual[0], away[1]), (actual[1], home[1])
+                elif away_code > home_code:
                     away_code, home_code = home_code, away_code
                     away, home = home, away
                 
