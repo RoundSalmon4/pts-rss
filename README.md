@@ -1,3 +1,5 @@
+This repo is now archived please use https://github.com/RoundSalmon4/espn-rss instead.
+
 
 # Plain Text Sports – RSS Feeds
 
