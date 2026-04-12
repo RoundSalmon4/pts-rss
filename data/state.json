@@ -47,7 +47,8 @@
       "nhl-MIN-NSH-2026-04-11": "MIN 1 \u2013 NSH 2 (Final)",
       "nhl-CHI-STL-2026-04-11": "CHI 3 \u2013 STL 5 (Final)",
       "nhl-DAL-NYR-2026-04-11": "DAL 2 \u2013 NYR 0 (Final)",
-      "nhl-CAR-UTA-2026-04-11": "CAR 4 \u2013 UTA 1 (Final)"
+      "nhl-CAR-UTA-2026-04-11": "CAR 4 \u2013 UTA 1 (Final)",
+      "nhl-CGY-SEA-2026-04-11": "CGY 1 \u2013 SEA 4 (Final)"
     },
     "nfl": {},
     "wnba": {},
@@ -65,7 +66,11 @@
       "mls-CIN-TOR-2026-04-11": "CIN 1 \u2013 TOR 1 (Final)",
       "mls-MTL-PHI-2026-04-11": "MTL 1 \u2013 PHI 2 (Final)",
       "mls-ATX-LAG-2026-04-11": "ATX 1 \u2013 LAG 2 (Final)",
-      "mls-LAFC-POR-2026-04-11": "LAFC 1 \u2013 POR 2 (Final)"
+      "mls-LAFC-POR-2026-04-11": "LAFC 1 \u2013 POR 2 (Final)",
+      "mls-NYC-VAN-2026-04-11": "NYC 0 \u2013 VAN 2 (Final)",
+      "mls-DC-NER-2026-04-11": "DC 0 \u2013 NER 1 (Final)",
+      "mls-MIA-RBNY-2026-04-11": "MIA 2 \u2013 RBNY 2 (Final)",
+      "mls-CLT-NSH-2026-04-11": "CLT 1 \u2013 NSH 2 (Final)"
     },
     "nwsl": {}
   }
