@@ -545,6 +545,7 @@ def get_home_away(team1, team2, league, date_str):
     
     try:
         url = f"https://site.api.espn.com/apis/v1/schedule?sport={sport}&league={league_id}&dates={date_str.replace('-', '')}"
+        print(f"  ESPN lookup: {url}")
         resp = requests.get(url, headers=HEADERS, timeout=10)
         data = resp.json()
         
@@ -559,6 +560,8 @@ def get_home_away(team1, team2, league, date_str):
                 team_abbrev = c.get("team", {}).get("abbreviation", "")
                 team_map[team_abbrev] = c.get("homeAway", "")
             
+            print(f"    ESPN teams: {team_map}")
+            
             if team1 in team_map and team2 in team_map:
                 if team_map[team1] == "away" and team_map[team2] == "home":
                     result = (team1, team2)
@@ -568,9 +571,10 @@ def get_home_away(team1, team2, league, date_str):
                     result = None
                 
                 HOME_AWAY_CACHE[cache_key] = result
+                print(f"    Result for {team1}/{team2}: {result}")
                 return result
-    except:
-        pass
+    except Exception as e:
+        print(f"  ESPN API error: {e}")
     
     HOME_AWAY_CACHE[cache_key] = None
     return None
